@@ -30,7 +30,7 @@ RUN set -x \
     && apk add tzdata \
     && echo "$TZ" > /etc/TZ \
     && cp /usr/share/zoneinfo/$TZ /etc/timezone \
-    && apk del tzdata \
+    && cp /usr/share/zoneinfo/$TZ /etc/localtime \
     && apk add --no-cache $PHP_PKGS $NAGIOS_PKGS \
     && tar xzvf /nagioscore.tar.gz \
     && rm /nagioscore.tar.gz \

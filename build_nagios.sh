@@ -1,6 +1,8 @@
 #!/bin/bash -x
 
-set -e
+set -o errexit
+set -o nounset 
+
 
 declare TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
 declare NCORE_VERSION=4.3.4
@@ -8,6 +10,9 @@ declare NAGIOS_CORE_URL="https://assets.nagios.com/downloads/nagioscore/releases
 declare NPLUGIN_VERSION=2.2.1
 declare NAGIOS_PLUGINS_URL="https://nagios-plugins.org/download/nagios-plugins-${NPLUGIN_VERSION}.tar.gz" \
 
+cd "${TOOLS}"
+[[ -e "nagios-${NCORE_VERSION}" ]] && rm -rf "nagios-${NCORE_VERSION}"
+[[ -e "nagios-plugins-${NPLUGIN_VERSION}" ]] && rm -rf "nagios-plugins-${NPLUGIN_VERSION}"
 
 wget -O nagios.tar.gz "${NAGIOS_CORE_URL}"
 tar -xvf nagios.tar.gz
@@ -23,7 +28,7 @@ done < <(find . -exec grep -cH 'unzip -u ' '{}' \; | grep -v ':0' | awk 'BEGIN{ 
 ./configure
 make all
 
-cd "$TOOLS"
+cd "${TOOLS}"
 wget -O nagios_plugins.tag.gz "${NAGIOS_PLUGINS_URL}"
 tar -xvf nagios_plugins.tag.gz
 rm nagios_plugins.tag.gz

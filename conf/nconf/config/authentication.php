@@ -4,13 +4,13 @@
 ##
 
 #
-# Enable or disable user authentication. 
-# If disabled, no login is prompted to access the GUI and all features will be available (admin privs). 
+# Enable or disable user authentication.
+# If disabled, no login is prompted to access the GUI and all features will be available (admin privs).
 #
 define('AUTH_ENABLED', "0");
 
 #
-# How to authenticate, if authentication is enabled. 
+# How to authenticate, if authentication is enabled.
 # possible values: [file|sql|ldap|ad_ldap]
 #
 define('AUTH_TYPE', "file");
@@ -28,13 +28,13 @@ define('BASICAUTH_REALM',  "NConf Basic Auth");
 
 #
 # Defines the user name in the history table and in the welcome message.
-# If set to "0", the username will be used. If set to "1", the real name will be fetched, depending on which AUTH_TYPE you selected. 
+# If set to "0", the username will be used. If set to "1", the real name will be fetched, depending on which AUTH_TYPE you selected.
 #
 define('AUTH_FEEDBACK_AS_WELCOME_NAME', '1');
 
 #
 # Enable / disable logging of the remote-IP / hostname to the history.
-# If set to "1", the remote-IP is written to the history after a user logs in. 
+# If set to "1", the remote-IP is written to the history after a user logs in.
 # In case "HostnameLookups" is set to On in the apache config, the hostname will be used instead.
 define('LOG_REMOTE_IP_HISTORY', 1);
 
@@ -86,10 +86,10 @@ define('AD_USER_GROUP',         "CN=sysadmin");
 
 # Use external database (can be any mysql DB)
 # if you want to use the NConf DB, leave it commented
-//define('AUTH_DBHOST',       "localhost");
-//define('AUTH_DBNAME',       "NConf");
-//define('AUTH_DBUSER',       "nconf");
-//define('AUTH_DBPASS',       "link2db");
+define('AUTH_DBHOST',       "mysql");
+define('AUTH_DBNAME',       "NConf");
+define('AUTH_DBUSER',       "bobb");
+define('AUTH_DBPASS',       "123Oleary");
 
 # Custom SQL query to run in the user database.
 # The query should return exactly one (1) record if:
@@ -103,10 +103,10 @@ define('AD_USER_GROUP',         "CN=sysadmin");
 # the "contact" class (refer to the documentation for more details).
 # Feel free to define your own queries, if you want to access any other existing user database.
 
-# 
+#
 # if query matches, user will get limited access, for "normal users"
 # !!!USERNAME!!! and !!!PASSWORD!!! will be replaced with the username and password from login page
-# 
+#
 define('AUTH_SQLQUERY_USER',     '
 SELECT attr_value AS username, id_item AS user_id
   FROM ConfigAttrs,ConfigValues,ConfigItems

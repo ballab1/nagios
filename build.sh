@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# ensure this script is run as root
+if [[ $EUID != 0 ]]; then
+    sudo $0
+    exit
+fi
+
 set -o errexit
 set -o nounset 
 set -o verbose
@@ -7,12 +13,9 @@ set -o verbose
 declare TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
 declare -r progname="$( basename "${BASH_SOURCE[0]}" )" 
 
+cd "${TOOLS}"
 [[ -e nagios.tgz ]] && rm  nagios.tgz
-[[ -e  nagios-plugins.tgz ]] && rm nagios-plugins.tgz
-[[ -e  php.tgz ]] && rm php.tgz
- ../alpinefull/builder "$PWD/build_nagios.sh"
+ ../alpinefull/builder "$PWD/build_nagios.sh" "$PWD/nagios-custom.tgz"
 [[ -e ../opt/nagios.tgz ]] && mv ../opt/nagios.tgz .
-[[ -e ../opt/nagios-plugins.tgz ]] && mv ../opt/nagios-plugins.tgz .
-[[ -e ../opt/php.tgz ]] && mv ../opt/php.tgz .
 
-docker-compose build
+#docker-compose build

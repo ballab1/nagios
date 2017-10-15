@@ -1,4 +1,3 @@
 nagios.tgz
-nagios-plugins.tgz
 *.log
-conf
+etc/sp*

@@ -50,5 +50,5 @@ RUN mkdir /sessions
 #EXPOSE 80
 
 ENTRYPOINT [ "/run.sh" ]
-#CMD ["/usr/local/nagios/bin/nagios", "/usr/local/nagios/etc/nagios.cfg" ]
+#CMD ["/usr/local/nagios/bin/nagios", "/etc/nagios.cfg" ]
 CMD ["nagios"]

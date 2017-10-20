@@ -48,32 +48,32 @@ define('GROUP_NOBODY',     "0");
 ###
 
 ### LDAP (the tree design must be pam_ldap and nss_ldap compliant)
-define('LDAP_SERVER',      "ldaps://ldaphost.mydomain.com");
+#define('LDAP_SERVER',      "ldaps://ldaphost.mydomain.com");
 # The port to connect to. Not used when using URLs. Defaults to 389. (by PHP)
-define('LDAP_PORT',        "389");
-
-define('BASE_DN',          "uid=<username>,ou=People,dc=mydomain,dc=com");
-define('USER_REPLACEMENT', "<username>");
-define('GROUP_DN',         "ou=Group,dc=mydomain,dc=com");
-define('ADMIN_GROUP',      "cn=nagiosadmin");
-define('USER_GROUP',       "cn=sysadmin");
+#define('LDAP_PORT',        "389");
+#
+#define('BASE_DN',          "uid=<username>,ou=People,dc=mydomain,dc=com");
+#define('USER_REPLACEMENT', "<username>");
+#define('GROUP_DN',         "ou=Group,dc=mydomain,dc=com");
+#define('ADMIN_GROUP',      "cn=nagiosadmin");
+#define('USER_GROUP',       "cn=sysadmin");
 
 ###
 ###  Auth by "ad_ldap"
 ###
 
 ### Active Directory
-define('AD_LDAP_SERVER',        "ldap://ad-ldaphost.mydomain.com");
-define('AD_LDAP_PORT',          "389");
-define('AD_BASE_DN',            "CN=<username>,OU=All,OU=Users,DC=my,DC=domain,DC=com");
-define('AD_USER_REPLACEMENT',   "<username>");
-define('AD_GROUP_ATTRIBUTE',    "memberof");
-define('AD_USERNAME_ATTRIBUTE', "displayname");
-
+#define('AD_LDAP_SERVER',        "ldap://ad-ldaphost.mydomain.com");
+#define('AD_LDAP_PORT',          "389");
+#define('AD_BASE_DN',            "CN=<username>,OU=All,OU=Users,DC=my,DC=domain,DC=com");
+#define('AD_USER_REPLACEMENT',   "<username>");
+#define('AD_GROUP_ATTRIBUTE',    "memberof");
+#define('AD_USERNAME_ATTRIBUTE', "displayname");
+#
 # if AD_GROUP_DN ist the same for admin and user group:
-define('AD_GROUP_DN',           "OU=Group,DC=my,DC=domain,DC=com");
-define('AD_ADMIN_GROUP',        "CN=nagiosadmin");
-define('AD_USER_GROUP',         "CN=sysadmin");
+#define('AD_GROUP_DN',           "OU=Group,DC=my,DC=domain,DC=com");
+#define('AD_ADMIN_GROUP',        "CN=nagiosadmin");
+#define('AD_USER_GROUP',         "CN=sysadmin");
 # if AD_GROUP_DN differs for admins and users:
 # you can define FIX GROUPS: (needs empty GROUP_DN)
 //define('AD_GROUP_DN',         "");

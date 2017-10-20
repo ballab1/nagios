@@ -6,7 +6,7 @@ services:
             context: ../nagios
             args:
                 TZ: "America/New_York"
-        image: nagios:20170916
+        image: nagios:20171019
         container_name: nagios
         hostname: nagios
 #        restart: unless-stopped
@@ -18,6 +18,7 @@ services:
             - ../nagios/log:/var/log/nagios
             - ../nagios/conf/nconf/config:/usr/local/nagios/share/nconf/config
             - ../nagios/conf/nconf/ADD-ONS:/usr/local/nagios/share/nconf/ADD-ONS
+            - ../nagios/conf/nconf/output:/usr/local/nagios/share/nconf/output
         ports:
             - 8003:80
         logging:

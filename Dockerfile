@@ -4,7 +4,7 @@ ARG TZ=UTC
 
 ENV NCONF_VERSION=1.3.0-0
 ENV CORE_PKGS="bash curl findutils libxml2 nginx openssh-client perl shadow ttf-dejavu tzdata unzip" \
-    NAGIOS_PKGS="freetype gd jpeg libpng mysql perl-plack rsync supervisor zlib " \
+    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mysql perl-plack rsync supervisor zlib" \
     NAGIOS_HOME=/usr/local/nagios \
     WWW=/usr/local/nagios/share
 
@@ -18,7 +18,7 @@ ARG gid=1001
 
 # Add configuration, main script, tarfiles for core & plugs, and NCONF
 COPY nagios.tgz /tmp/
-COPY run.sh /
+COPY docker-entrypoint.sh /
 
 # Download tarball, verify it using gpg and extract
 # Install dependencies
@@ -40,15 +40,20 @@ RUN set -x \
     && ln -s /usr/local/nagios/etc /etc/nagios \
     && mkdir -p /var/log/nagios \
     && chmod a+rwx /var/log/nagios \
-    && chmod u+rwx /run.sh \
+    && find /usr/local/nagios/share -type d -exec chmod a+rx '{}' \; \
+    && find /usr/local/nagios/share -type f -exec chmod a+r '{}' \; \
+    && chmod u+rwx /docker-entrypoint.sh \
     && rm -rf /tmp/*
 
 # Add directory for sessions to allow session persistence
 RUN mkdir /sessions
+# \
+#    && ln -sf /dev/stdout /var/log/nginx/access.log \
+#    && ln -sf /dev/stderr /var/log/nginx/error.log 
 
 # We expose nagios on port 80
 #EXPOSE 80
-
-ENTRYPOINT [ "/run.sh" ]
+    
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
 #CMD ["/usr/local/nagios/bin/nagios", "/etc/nagios.cfg" ]
 CMD ["nagios"]

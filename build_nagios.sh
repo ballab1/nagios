@@ -103,6 +103,7 @@ make all
 tar xzvf "${TOOLS}/nagios-custom.tgz"
 [[ -d "${TOOLS}/custom/etc" ]] || mkdir -p "${TOOLS}/custom/etc"
 mv custom/etc/* "${TOOLS}/custom/etc"
+mv custom/var "${TOOLS}/custom"
 mv custom/nagios.tar.inc "${TOOLS}/custom"
 cat custom/Makefile.custom >> Makefile
 make install
@@ -144,8 +145,8 @@ mv nconf/UPDATE* "${NAGIOS_HOME}/nconf/"
 mv nconf/SUMS* "${NAGIOS_HOME}/nconf/"
 mv nconf/* "${WWW}/nconf/"
 chown -R root:nobody "${WWW}"
-find "${WWW}" -type d -exec chmod 750 {} \;
-find "${WWW}" -type f -exec chmod 640 {} \;
+find "${WWW}" -type d -exec chmod 755 {} \;
+find "${WWW}" -type f -exec chmod 644 {} \;
 find "${WWW}/nconf/config" -type d -exec chmod 777 {} \;
 find "${WWW}/nconf/config" -type f -exec chmod 666 {} \;
 find "${WWW}/nconf/output" -type d -exec chmod 777 {} \;
@@ -163,5 +164,6 @@ cd "${TOOLS}"
 #rm -rf "nagios-plugins-${NPLUGIN_VERSION}" "nagios-plugins-${NPLUGIN_VERSION}.tag.gz"
 #rm -rf "nconf-${NCONF_VERSION}.tgz" nconf.tgz.sha nconf
 cp -r custom/etc/* /etc
-
+cp -r custom/var/* /var
+    
 tar cvzf nagios.tgz -T custom/nagios.tar.inc

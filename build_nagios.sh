@@ -98,7 +98,7 @@ while read -r fl; do
   mv "${fl}.new" "$fl"
 done < <(find . -exec grep -cH 'unzip -u ' '{}' \; | grep -v ':0' | awk 'BEGIN{ FS=":"; }{ print $1 }')
 
-./configure
+./configure --with-gd-inc --with-gd-lib
 make all
 tar xzvf "${TOOLS}/nagios-custom.tgz"
 [[ -d "${TOOLS}/custom/etc" ]] || mkdir -p "${TOOLS}/custom/etc"

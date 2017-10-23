@@ -22,6 +22,7 @@ services:
             - ../nagios/conf/nconf/output:/usr/local/nagios/share/nconf/output
             - ../nagios/log:/var/log
         ports:
+            - 25:25
             - 8003:80
         logging:
             driver: "json-file"

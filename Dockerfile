@@ -38,6 +38,7 @@ RUN set -x \
     && cd / \
     && tar xzvf /tmp/nagios.tgz \
     && ln -s /usr/local/nagios/etc /etc/nagios \
+    && ln -s /usr/local/nagios/bin/nagios /usr/bin/nagios \
     && mkdir -p /var/log/nagios \
     && chmod a+rwx /var/log/nagios \
     && find /usr/local/nagios/share -type d -exec chmod a+rx '{}' \; \
@@ -51,9 +52,8 @@ RUN mkdir /sessions
 #    && ln -sf /dev/stdout /var/log/nginx/access.log \
 #    && ln -sf /dev/stderr /var/log/nginx/error.log 
 
-# We expose nagios on port 80
-#EXPOSE 80
+# We expose nagios on ports 80,25
+EXPOSE 25
     
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
-#CMD ["/usr/local/nagios/bin/nagios", "/etc/nagios.cfg" ]
 CMD ["nagios"]

@@ -82,7 +82,7 @@ done
 cd "${TOOLS}"
 tar xvzf "php-${PHP_VERSION}.tar.gz"
 cd "${TOOLS}/php-${PHP_VERSION}"
-./configure --enable-fpm --with-mysql
+./configure --enable-fpm --with-mysql --enable-zip --disable-phar --with-libxml-dir=/usr/lib --enable-sockets
 make all
 make install
 
@@ -125,7 +125,6 @@ make install
 mv "${NAGIOS_HOME}/etc" "${NAGIOS_HOME}/etc.bak"
 mkdir -p "${NAGIOS_HOME}/etc"
 mv ../"nagios-${NCORE_VERSION}"/custom/etc.nagios/*  "${NAGIOS_HOME}/etc"
-
 
 #  prepare nconf
 cd "${TOOLS}"

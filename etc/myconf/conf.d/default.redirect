@@ -2,7 +2,8 @@ location / {
     try_files $uri $uri/ =404;
 }
 
-location ~* .(jpg|jpeg|png|gif|ico|css|js)$ {
+location ~* .(gd2|jpg|jpeg|png|gif|ico|css|js)$ {
+    rewrite /images/logos/base/(.*)$ /images/logos/$1;
     expires 365d;
 }
 
@@ -29,15 +30,27 @@ location ~ \.php$ {
     include /etc/nginx/fastcgi.conf; 
 }
 
+#location ~ \.php$ {
+#    fastcgi_split_path_info ^(.+\.php)(.*)$;
+#    fastcgi_index   index.php;
+#    fastcgi_param   SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+#    #fastcgi_param  PATH_INFO $fastcgi_script_name;
+#    include         fastcgi_params;
+#    fastcgi_pass php;
+#}
+
 location ~ \.cgi$ {
     root /usr/local/nagios/sbin;
+    rewrite ^/nagios/cgi-bin/(.*)$ /$1;
     rewrite ^/cgi-bin/(.*)$ /$1;
     include /etc/nginx/fastcgi_params;
+
     fastcgi_param AUTH_USER $remote_user;
     fastcgi_param REMOTE_USER $remote_user;
+    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;
     fastcgi_pass fcgiwrap;
-} 
-        
+}
+
 location ~ /\. {
     deny  all;
 }

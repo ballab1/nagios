@@ -1,5 +1,8 @@
 #!/bin/sh
 
+export NAGIOS_HOME='/usr/local/nagios'
+export WWW="${NAGIOS_HOME}/share"
+export NCONF="${WWW}/nconf"
 
 if [ "$1" = 'nagios' ]; then
     [[ -d /var/nginx/client_body_temp ]] || mkdir -p /var/nginx/client_body_temp

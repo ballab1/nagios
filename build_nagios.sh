@@ -143,6 +143,7 @@ mv nconf/INSTALL* "${NAGIOS_HOME}/nconf/"
 mv nconf/UPDATE* "${NAGIOS_HOME}/nconf/"
 mv nconf/SUMS* "${NAGIOS_HOME}/nconf/"
 mv nconf/* "${WWW}/nconf/"
+cp -r custom/nconf "${WWW}/"
 chown -R root:nobody "${WWW}"
 find "${WWW}" -type d -exec chmod 755 {} \;
 find "${WWW}" -type f -exec chmod 644 {} \;

@@ -3,10 +3,11 @@ FROM alpine:3.6
 ARG TZ=UTC
 
 ENV NCONF_VERSION=1.3.0-0
-ENV CORE_PKGS="bash curl findutils libxml2 nginx openssh-client perl shadow ttf-dejavu tzdata unzip" \
-    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mysql perl-plack rsync supervisor zlib" \
+ENV CORE_PKGS="bash curl findutils libxml2 nginx openssh-client perl perl-dbi perl-dbd-mysql perl-cgi-session shadow ttf-dejavu tzdata unzip" \
+    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mysql perl-plack rsync sudo supervisor zlib" \
     NAGIOS_HOME=/usr/local/nagios \
-    WWW=/usr/local/nagios/share
+    WWW=/usr/local/nagios/share \
+    NCONF=/usr/local/nagios/share/nconf
 
 # Calculate download URL
 LABEL version=$VERSION

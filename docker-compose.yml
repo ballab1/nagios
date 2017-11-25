@@ -12,13 +12,11 @@ services:
 #        restart: unless-stopped
         environment:
             TZ: "America/New_York"
+            DBHOST: "mysql"
+            DBNAME: "nconf"
+            DBUSER: "bobb"
+            DBPASS: "123Oleary" 
         volumes:
-            - ../nagios/etc/myconf:/etc/myconf
-            - ../nagios/etc/myconf/nginx.conf:/etc/nginx/nginx.conf
-            - ../nagios/etc/myconf/conf.d:/etc/nginx/conf.d
-            - ../nagios/etc/supervisor.d:/etc/supervisor.d
-            - ../nagios/conf/nconf/config:/usr/local/nagios/share/nconf/config
-            - ../nagios/conf/nconf/ADD-ONS:/usr/local/nagios/share/nconf/ADD-ONS
             - ../nagios/conf/nconf/output:/usr/local/nagios/share/nconf/output
             - ../nagios/log:/var/log
         ports:

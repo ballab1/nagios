@@ -6,7 +6,7 @@ services:
             context: ../nagios
             args:
                 TZ: "America/New_York"
-        image: nagios:20171019
+        image: nagios:20171125
         container_name: nagios
         hostname: nagios
 #        restart: unless-stopped
@@ -14,8 +14,8 @@ services:
             TZ: "America/New_York"
             DBHOST: "mysql"
             DBNAME: "nconf"
-            DBUSER: "bobb"
-            DBPASS: "123Oleary" 
+            DBUSER: "CFG_MYSQL_USER"
+            DBPASS: "CFG_MYSQL_PASSWORD"
         volumes:
             - ../nagios/conf/nconf/output:/usr/local/nagios/share/nconf/output
             - ../nagios/log:/var/log

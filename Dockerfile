@@ -14,8 +14,8 @@ LABEL version=$VERSION
 
 ARG user=nagios
 ARG group=nagios
-ARG uid=1001
-ARG gid=1001
+ARG uid=1002
+ARG gid=1002
 
 # Add configuration, main script, tarfiles for core & plugs, and NCONF
 COPY nagios.tgz /tmp/
@@ -49,9 +49,7 @@ RUN set -x \
 
 # Add directory for sessions to allow session persistence
 RUN mkdir /sessions
-# \
-#    && ln -sf /dev/stdout /var/log/nginx/access.log \
-#    && ln -sf /dev/stderr /var/log/nginx/error.log 
+#    && ln -sf /dev/stdout /var/log/container.log
 
 # We expose nagios on ports 80,25
 EXPOSE 25

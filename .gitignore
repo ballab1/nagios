@@ -1,3 +1,7 @@
 nagios.tgz
 *.log
 etc/sp*
+x/*
+archives/*
+config/*
+log/*

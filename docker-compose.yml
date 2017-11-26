@@ -17,7 +17,8 @@ services:
             DBUSER: "CFG_MYSQL_USER"
             DBPASS: "CFG_MYSQL_PASSWORD"
         volumes:
-            - ../nagios/conf/nconf/output:/usr/local/nagios/share/nconf/output
+            - ../nagios/archives:/usr/local/nagios/var/archives
+            - ../nagios/config:/usr/local/nagios/share/nconf/output
             - ../nagios/log:/var/log
         ports:
             - 25:25

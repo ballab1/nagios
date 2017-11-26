@@ -33,7 +33,6 @@ RUN set -x \
     && echo "$TZ" > /etc/TZ \
     && cp /usr/share/zoneinfo/$TZ /etc/timezone \
     && cp /usr/share/zoneinfo/$TZ /etc/localtime \
-    && apk add --no-cache $CORE_PKGS $NAGIOS_PKGS \
     && /usr/sbin/groupadd -g ${gid} ${group} \
     && /usr/sbin/useradd -d "$NAGIOS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user} \
     && cd / \

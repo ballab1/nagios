@@ -1,3 +1,8 @@
+location ~ ^/nagiosgraph/(.*)$ {
+    rewrite ^/nagios/(.*)$ /$1;
+    try_files $uri $uri/ /index.php;
+} 
+
 location ~ ^/nagios/(.*)$ {
     rewrite ^/nagios/(.*)$ /$1;
     try_files $uri $uri/ /index.php;

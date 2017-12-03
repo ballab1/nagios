@@ -2,8 +2,6 @@
 Nagios 4.3.2 on alpine on docker
 
 
-e9b5081eef9a80de5bbb7ae6eaf4d47cc7c828b0
-
 -------   use ENV for /usr/local/nagios
 -------       NAGIOS_HOME=/usr/local/nagios
 -------       WWW=/usr/local/nagios/share
@@ -76,3 +74,62 @@ checking required PERL modules
 checking optional PERL modules
   GD...2.56
   Nagios::Config... ***FAIL***
+
+
+bash-4.3# apk search rrdtool
+rrdtool-cached-1.5.6-r2
+rrdtool-dev-1.5.6-r2
+collectd-rrdtool-5.6.2-r0
+rrdtool-cgi-1.5.6-r2
+rrdtool-doc-1.5.6-r2
+rrdtool-1.5.6-r2
+rrdtool-utils-1.5.6-r2
+uwsgi-rrdtool-2.0.14-r9
+
+
+
+BUILDTIME_PKGS=alpine-sdk bash-completion busybox gd-dev git jpeg-dev libpng-dev libxml2-dev linux-headers glib-dev pango pango-dev
+
+tar xvf rrdtool-1.7.0.tar.gz
+cd /tmp/rrdtool-1.7.0
+./configure --with-gnu-ld --disable-docs
+
+----------------------------------------------------------------
+Config is DONE!
+
+          With MMAP IO: yes
+          With Locking: yes
+       Build rrd_graph: yes
+     Build rrd_restore: yes
+       Static programs: no
+          Perl Modules: perl-piped perl-shared
+           Perl Binary: /usr/bin/perl
+          Perl Version: 5.24.3
+          Perl Options: PREFIX=/opt/rrdtool-1.7.0 INSTALL_BASE= LIB=/opt/rrdtool-1.7.0/lib/perl/5.24.3
+          Ruby Modules:
+           Ruby Binary: no
+          Ruby Options: sitedir=/opt/rrdtool-1.7.0/lib/ruby
+    Build Lua Bindings: no
+    Build Tcl Bindings: no
+ Build Python Bindings: no
+        Build examples: yes
+       Build rrdcached: yes
+          Build rrdcgi: yes
+       Build librrd MT: yes
+           Use gettext: yes
+           With libDBI: no
+         With librados: no
+          With libwrap: no
+      With systemd dir:
+
+             Libraries: -lpng  -lglib-2.0 -lintl  -lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lintl -lcairo  -lxml2
+
+Type 'make' to compile the software and use 'make install' to
+install everything to: /opt/rrdtool-1.7.0.
+
+       ... that wishlist is NO JOKE. If you find RRDtool useful
+make me happy. Go to http://tobi.oetiker.ch/wish and
+place an order.
+
+                               -- Tobi Oetiker <tobi@oetiker.ch>
+----------------------------------------------------------------

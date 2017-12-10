@@ -10,9 +10,11 @@ use NConf::DB::Read;
 use NConf::DB::Modify;
 use NConf::Logger;
 use NConf::ImportNagios;
+use Nagios::Config;
 use Getopt::Std;
 use Tie::IxHash;    # preserve hash order
 
+# global vars
 use constant {
    FILES => [ { 'advanced-services.cfg' => 'advanced-service' },
               { 'checkcommands.cfg' => 'checkcommand' },
@@ -36,55 +38,46 @@ use constant {
            ]
 };
 
-# read commandline arguments
-use vars qw($opt_c $opt_f $opt_x $opt_s);
-getopts('c:f:x:s');
-unless($opt_c && $opt_f){&usage}
-if($opt_x){&setLoglevel($opt_x)}
-if($opt_s){&setDbReadonly(1)}
-
-$opt_c =~ s/^\s*//;
-$opt_c =~ s/\s*$//;
-
-# global vars
-
 #########################
-# MAIN
+# SUB: process file
+sub process_file($$) {
 
-&logger(3,"Started executing $0");
+  tie my %main_hash, 'Tie::IxHash';
+  %main_hash = &parseNagiosConfigFile($opt_c, $opt_f);
 
-tie my %main_hash, 'Tie::IxHash';
-%main_hash = &parseNagiosConfigFile($opt_c, $opt_f);
+  # loop through all items
+  foreach my $item (keys(%main_hash)){
 
-# loop through all items
-foreach my $item (keys(%main_hash)){
+      # service-specific formating
+      my $item_print = undef;
+      if($opt_c eq "service" && $item =~ /;;/){
+          $item =~ /(.*);;(.*)/;
+          $item_print = "'$2' to host(s) '$1'";
+      }
+      else{
+          $item_print = "'$item'"
+      }
 
-    # service-specific formating
-    my $item_print = undef;
-    if($opt_c eq "service" && $item =~ /;;/){
-        $item =~ /(.*);;(.*)/;
-        $item_print = "'$2' to host(s) '$1'";
-    }else{$item_print = "'$item'"}
+      &logger(3,"Adding $opt_c $item_print");
 
-    &logger(3,"Adding $opt_c $item_print");
+      tie my %item_hash, 'Tie::IxHash';
+      %item_hash = %{$main_hash{$item}};
 
-    tie my %item_hash, 'Tie::IxHash';
-    %item_hash = %{$main_hash{$item}};
-
-    if( &addItem($opt_c, %item_hash) ){
-        logger(3, "Successfully added $opt_c $item_print");
-    }else{
-        logger(1, "Failed to add $opt_c $item_print. Aborting");
-    }
+      if( &addItem($opt_c, %item_hash) ){
+          logger(3, "Successfully added $opt_c $item_print");
+      }
+      else{
+          logger(1, "Failed to add $opt_c $item_print. Aborting");
+      }
+  }
 }
 
-&logger(3,"Finished running $0");
 
 #########################
 # SUB: display usage information
 sub usage {
 
-print <<"EOT";
+    print <<"EOT";
 
 Script by Angelo Gargiulo, Sunrise Communications AG
 This script reads an existing Nagios configuration file and imports any items 
@@ -98,7 +91,7 @@ Help:
   required
 
   -c  Specify the class of items that you wish to import. Must correspond to an NConf class
-      (e.g. "host", "service, "hostgroup", "checkcommand", "contact", "timeperiod"...)
+      (e.g. "host", "service", "hostgroup", "checkcommand", "contact", "timeperiod"...)
 
   -f  The path to the file which is to be imported. CAUTION: Make sure you have
       only items of one class in the same file (e.g. "hosts.cfg", "services.cfg"...)
@@ -111,7 +104,28 @@ Help:
 
   -s  Simulate only. Do not make any actual modifications to the database.
 
-EOT
+    EOT
+}
+
+
+#########################
+# MAIN
+
+# read commandline arguments
+use vars qw($opt_c $opt_f $opt_x $opt_s);
+getopts('c:f:x:s');
+&usage                unless($opt_c && $opt_f);
+
+&logger(3,"Started executing $0");
+
+&setLoglevel($opt_x)  if($opt_x);
+&setDbReadonly(1)     if($opt_s);
+
+$opt_c =~ s/^\s*//;
+$opt_c =~ s/\s*$//;
+&process_file($opt_c, $opt_f);
+&logger(3,"Finished running $0");
+
 exit;
 
 }

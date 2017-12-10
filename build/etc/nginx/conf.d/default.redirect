@@ -45,7 +45,7 @@ location ~ \.php$ {
     fastcgi_buffering off;
 
 #    try_files $uri $uri/ =404;
-    fastcgi_pass php_fpm;
+    fastcgi_pass php5_fpm;
     fastcgi_index index.php;
     include /etc/nginx/fastcgi.conf; 
 #    fastcgi_param   SCRIPT_FILENAME  $document_root$fastcgi_script_name;

@@ -9,7 +9,7 @@
 ## no critic (ProhibitConstantPragma)
 
 # The configuration file and ngshared.pm must be in this directory:
-use lib '/usr/local/nagiosgraph/etc';
+use lib '/usr/local/nagios/etc/nagiosgraph';
 
 use ngshared;
 use English qw(-no_match_vars);

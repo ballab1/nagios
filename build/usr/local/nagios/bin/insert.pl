@@ -36,7 +36,8 @@
 # to the nagiosgraph log file.
 
 # The configuration file and ngshared.pm must be in this directory:
-use lib '/usr/local/nagiosgraph/etc';
+use lib '/usr/local/nagios/etc/nagiosgraph';
+use lib '/usr/local/nagios/sbin';
 
 use ngshared;
 use strict;
@@ -64,23 +65,45 @@ if ( $errmsg ne q() ) {
     exit 1;
 }
 
+my @perfdata;
 if ( $ARGV[0] ) {
     processdata( $ARGV[0] );
-} elsif ( defined $Config{perfloop} && $Config{perfloop} > 0 ) {
+}
+elsif ( defined $Config{perfloop} && $Config{perfloop} > 0 ) {
     my $poll = ( $Config{perfloop} < MINPOLL ) ? MINPOLL : $Config{perfloop};
     debug( DBINF, 'insert.pl using poll interval of ' . $poll . ' seconds' );
     while (1) {
-        my @perfdata = readperfdata( $Config{perflog} );
-        if (@perfdata) { processdata(@perfdata); }
+        if (exists $Config{perflog}) {
+            @perfdata =  readperfdata( $Config{perflog} );
+            processdata(@perfdata)  if (@perfdata);
+        }
+        if (exists $Config{hostPerflog}) {
+            @perfdata =  readperfdata( $Config{hostPerflog} );
+            processdata(@perfdata)  if (@perfdata);
+        }
+        if (exists $Config{servicePerflog}) {
+            @perfdata =  readperfdata( $Config{servicePerflog} );
+            processdata(@perfdata)  if (@perfdata);
+        }
         debug( DBDEB, 'insert.pl waiting for input' );
         sleep $poll;
     }
-} else {
-    my @perfdata = readperfdata( $Config{perflog} );
-    if (@perfdata) { processdata(@perfdata); }
+}
+else {
+    if (exists $Config{perflog}) {
+        @perfdata =  readperfdata( $Config{perflog} );
+        processdata(@perfdata)  if (@perfdata);
+    }
+    if (exists $Config{hostPerflog}) {
+        @perfdata =  readperfdata( $Config{hostPerflog} );
+        processdata(@perfdata)  if (@perfdata);
+    }
+    if (exists $Config{servicePerflog}) {
+        @perfdata =  readperfdata( $Config{servicePerflog} );
+        processdata(@perfdata)  if (@perfdata);
+    }
 }
 
 debug( DBDEB, 'insert.pl processing complete' );
 
 exit 0;
-

@@ -1,6 +1,6 @@
 FROM alpine:3.6
 
-ARG TZ=UTC
+ARG TZ=America/New_York
 ARG nagios_user=nagios
 ARG nagios_group=nagios
 ARG nagios_uid=1002
@@ -12,18 +12,19 @@ ARG www_gid=82
 
 
 ENV VERSION=1.0.0 \
-    NCORE_VERSION=4.3.4 \
-    NCONF_VERSION=1.3.0-0 \ 
-    NPLUGIN_VERSION=2.2.1 \
-    PHP_VERSION=5.6.31 \
+    NCORE_VERSION=4.3.4 \ 
+    NCONF_VERSION=1.3.0-0 \
+    NGRAPH_VERSION=1.5.2 \
     NAGIOS_HOME=/usr/local/nagios \
     NGRAPH_HOME=/usr/local/nagiosgraph \
     NCONF_HOME=/usr/local/nagios/share/nconf \
     WWW=/usr/local/nagios/share
 
 ENV BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers rrdtool-dev" \
-    CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client perl perl-cgi perl-cgi-session shadow sudo supervisor ttf-dejavu tzdata unzip util-linux zlib" \
-    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mysql perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd rrdtool rrdtool-cgi rrdtool-utils rsync"
+    CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client shadow sudo supervisor ttf-dejavu tzdata unzip util-linux zlib" \
+    PERL_PKGS="perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd" \
+    PHP_PKGS="php5-fpm php5-ctype php5-cgi php5-common php5-dom php5-iconv php5-imap php5-json php5-ldap php5-mysql php5-pgsql php5-pdo php5-pdo_dblib php5-pdo_mysql php5-pdo_pgsql php5-pdo_sqlite php5-posix php5-sockets php5-sqlite3 php5-xml php5-xmlreader php5-xmlrpc php5-zip" \
+    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mysql nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync"
 
 LABEL version=$VERSION
 
@@ -44,7 +45,7 @@ RUN set -o xtrace \
     && ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh \
     \
     && apk update \
-    && apk add --no-cache $CORE_PKGS $NAGIOS_PKGS \
+    && apk add --no-cache $CORE_PKGS $PERL_PKGS $PHP_PKGS $NAGIOS_PKGS \
     && apk add --no-cache --virtual .buildDepedencies $BUILDTIME_PKGS \
     \
     && echo "$TZ" > /etc/TZ \
@@ -61,8 +62,8 @@ RUN set -o xtrace \
 # We expose nagios on ports 80,25
 EXPOSE 25
 
-USER $nagios_user
-WORKDIR $NAGIOS_HOME
+#USER $nagios_user
+#WORKDIR $NAGIOS_HOME\
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD ["nagios"]

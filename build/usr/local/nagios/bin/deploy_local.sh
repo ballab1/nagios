@@ -32,4 +32,4 @@ rm -rf "${NAGIOS_HOME}/etc/global"
 echo adding new config
 tar -xzf "${tmpArchive}" -C "${NAGIOS_HOME}/etc"
 echo restartng 'nagios' service
-nagios -v "${NAGIOS_HOME}/etc/nagios.cfg"
+/etc/init.d/nagios restart

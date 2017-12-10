@@ -6,7 +6,7 @@ services:
             context: ../nagios
             args:
                 TZ: "America/New_York"
-        image: nagios:20171125
+        image: nagios:20171210
         container_name: nagios
         hostname: nagios
 #        restart: unless-stopped

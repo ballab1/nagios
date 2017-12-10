@@ -24,7 +24,7 @@ ENV BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-ut
     CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client shadow sudo supervisor ttf-dejavu tzdata unzip util-linux zlib" \
     PERL_PKGS="perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd" \
     PHP_PKGS="php5-fpm php5-ctype php5-cgi php5-common php5-dom php5-iconv php5-imap php5-json php5-ldap php5-mysql php5-pgsql php5-pdo php5-pdo_dblib php5-pdo_mysql php5-pdo_pgsql php5-pdo_sqlite php5-posix php5-sockets php5-sqlite3 php5-xml php5-xmlreader php5-xmlrpc php5-zip" \
-    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mysql nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync"
+    NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mrtg mysql nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync"
 
 LABEL version=$VERSION
 

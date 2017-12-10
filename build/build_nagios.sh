@@ -293,6 +293,12 @@ function installNAGIOSGRAPH()
 
     cp share/nagiosgraph.css "${WWW}"
     cp share/nagiosgraph.js "${WWW}"
+    mkdir -p "${WWW}/images"
+    cp share/graph.gif "${WWW}/images/"
+    mv "${WWW}/images/action.gif" "${WWW}/images/action.org.gif"
+    ln -s "${WWW}/images/graph.gif" "${WWW}/images/action.gif"
+    mkdir -p "${WWW}/ssi"
+    cp share/nagiosgraph.ssi "${WWW}/ssi/common-header.ssi"
 
     mkdir -p "${NAGIOS_HOME}/var/rrd"   # Directory in which to store RRD files
 
@@ -370,7 +376,7 @@ fixupNginxLogDirecory
 #installPHP
 installNAGIOS
 #installNAGIOS_PLUGINS
-#installNAGIOS_OBJECT
+installNAGIOS_OBJECT
 installNCONF
 installNAGIOSGRAPH
 installCUSTOMIZATIONS

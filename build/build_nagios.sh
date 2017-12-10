@@ -99,20 +99,19 @@ function die() {
 #############################################################################
 function cleanup()
 {
-set -o verbose
     printf "\nclean up\n"
     rm -rf /usr/local/php/man
     rm -rf /usr/local/include
     rm -rf /usr/local/nagios/include
     rm -rf /usr/local/nagios/share/docs
     rm -rf /usr/include
+    rm -rf /tmp/*
 }
 
 
 #############################################################################
 function createUserAndGroup()
 {
-set -o verbose
     local -r user=$1
     local -r uid=$2
     local -r group=$3
@@ -138,7 +137,6 @@ set -o verbose
 #############################################################################
 function downloadFile()
 {
-set -o verbose
     local -r name=$1
     local -r file="${name}_FILE"
     local -r url="${name}_URL"
@@ -159,7 +157,6 @@ set -o verbose
 #############################################################################
 function downloadFiles()
 {
-set -o verbose
     cd ${TOOLS}
 
     #downloadFile 'PHP'
@@ -173,7 +170,6 @@ set -o verbose
 #############################################################################
 function fixupNginxLogDirecory()
 {
-set -o verbose
     printf "\nfix default log directory for nginx\n"
     if [[ -h /var/lib/nginx ]]; then
         rm  /var/lib/nginx
@@ -186,7 +182,6 @@ set -o verbose
 #############################################################################
 function installCUSTOMIZATIONS()
 {
-set -o verbose
     printf "\nAdd configuration and customizations\n"
     cp -r "${TOOLS}/etc"/* /etc
     cp -r "${TOOLS}/usr"/* /usr
@@ -198,7 +193,6 @@ set -o verbose
 #############################################################################
 function installNAGIOS()
 {
-set -o verbose
     local -r file="$NCORE_FILE"
 
     printf "\nprepare and install %s\n" "${file}"
@@ -235,7 +229,6 @@ set -o verbose
 #############################################################################
 function installNAGIOS_OBJECT()
 {
-set -o verbose
     local -r file="$NOBJECT_FILE"
 
     printf "\nprepare and install %s\n" "${file}"
@@ -249,7 +242,6 @@ set -o verbose
 #############################################################################
 function installNCONF()
 {
-set -o verbose
     local -r file="$NCONF_FILE"
 
     printf "\nprepare and install %s\n" "${file}"
@@ -271,7 +263,6 @@ set -o verbose
 #############################################################################
 function installNAGIOS_PLUGINS()
 {
-set -o verbose
     local -r file="$NPLUG_FILE"
 
     printf "\nprepare and install %s\n" "${file}"
@@ -288,7 +279,6 @@ set -o verbose
 #############################################################################
 function installNAGIOSGRAPH()
 {
-set -o verbose
     local -r file="$NGRAPH_FILE"
 
     printf "\nprepare and install %s\n" "${file}"
@@ -314,7 +304,6 @@ set -o verbose
 #############################################################################
 function installPHP()
 {
-set -o verbose
     local -r file="$PHP_FILE"
 
     printf "\nprepare and install %s\n" "${file}"
@@ -331,7 +320,6 @@ set -o verbose
 #############################################################################
 function setPermissions()
 {
-set -o verbose
     printf "\nmake sure that ownership & permissions are correct\n"
 
     chown root:root /etc/sudoers.d/*
@@ -362,6 +350,7 @@ set -o verbose
     find "${WWW}/nconf/static_cfg" -type f -exec chmod 666 {} \;
     find "${WWW}/nconf/temp" -type d -exec chmod 777 {} \;
 #    chown -R "${www_user}:${www_user}" "${WWW}"
+ls -l /usr/local/nagios
 }
 
 

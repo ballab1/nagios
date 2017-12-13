@@ -18,6 +18,7 @@ services:
             DBPASS: ${CFG_MYSQL_PASSWORD}
         volumes:
             - ../nagios/archives:/usr/local/nagios/var/archives
+            - ../nagios/rrd:/usr/local/nagios/var/rrd
             - ../nagios/config:/usr/local/nagios/share/nconf/output
             - ../nagios/log:/var/log
         ports:

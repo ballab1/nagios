@@ -142,7 +142,7 @@ function downloadFile()
     local -r url="${name}_URL"
     local -r sha="${name}_SHA256"
 
-    printf "\nDownloading  %s, %s, %s\n" "${!file}" "${!url}" "${!sha}" 
+    printf "\nDownloading  %s\n" "${!file}"
     for i in {0..3}; do
         [[ i -eq 3 ]] && exit 1
         wget -O "${!file}" --no-check-certificate "${!url}"
@@ -186,7 +186,15 @@ function installCUSTOMIZATIONS()
     cp -r "${TOOLS}/etc"/* /etc
     cp -r "${TOOLS}/usr"/* /usr
     cp -r "${TOOLS}/var"/* /var
-    mkdir /sessions
+    
+    if [[ -h /var/lib/nginx/logs ]]; then
+        rm /var/lib/nginx/logs
+        ln -s /var/log /var/lib/nginx/logs
+    fi
+    [[ -d /var/nginx/client_body_temp ]] || mkdir -p /var/nginx/client_body_temp
+    [[ -d /sessions ]]                   || mkdir -p /sessions
+    [[ -d /var/run/php ]]                || mkdir -p /var/run/php
+    [[ -d /run/nginx ]]                  || mkdir -p /run/nginx
 }
 
 
@@ -331,21 +339,24 @@ function setPermissions()
     chown root:root /etc/sudoers.d/*
     chmod 600 /etc/sudoers.d/*
 
-    mkdir -p /var/run/php
-    chown nobody:nobody /var/run/php
-#    chown -R "${www_user}:${www_user}" /var/run/php
 
     chmod 775 "${NAGIOS_HOME}/sbin"/*
     chmod 755 "${NAGIOS_HOME}/bin"/*
     find "${NAGIOS_HOME}/etc" -type d -exec chmod 777 {} \;
     find "${NAGIOS_HOME}/etc" -type f -exec chmod 666 {} \;
-    chown nagios:nagios -R "${NAGIOS_HOME}/etc"
-    chown nagios:nagios "${NAGIOS_HOME}/sbin"/*
-    chown nagios:nagios -R "${NAGIOS_HOME}/var"
+    chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/etc"
+    chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/sbin"/*
+    chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/var"
+
+
+    www_user='nobody'
+    chown "${www_user}:${www_user}" -R /var/nginx/client_body_temp
+    chown "${www_user}:${www_user}" -R /sessions
+    chown "${www_user}:${www_user}" -R /var/run/php
 
     find "${WWW}" -type d -exec chmod 755 {} \;
     find "${WWW}" -type f -exec chmod 644 {} \;
-    chown -R nobody:nobody "${WWW}"
+    chown -R "${www_user}:${www_user}" "${WWW}"
 
     chmod 755 -R "${WWW}/nconf/bin"/*
     find "${WWW}/nconf/config" -type d -exec chmod 777 {} \;
@@ -355,8 +366,6 @@ function setPermissions()
     find "${WWW}/nconf/static_cfg" -type d -exec chmod 777 {} \;
     find "${WWW}/nconf/static_cfg" -type f -exec chmod 666 {} \;
     find "${WWW}/nconf/temp" -type d -exec chmod 777 {} \;
-#    chown -R "${www_user}:${www_user}" "${WWW}"
-ls -l /usr/local/nagios
 }
 
 

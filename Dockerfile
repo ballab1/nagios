@@ -20,29 +20,24 @@ ENV VERSION=1.0.0 \
     NCONF_HOME=/usr/local/nagios/share/nconf \
     WWW=/usr/local/nagios/share
 
-ENV BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers rrdtool-dev" \
+ENV BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers musl-utils rrdtool-dev" \
     CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client shadow sudo supervisor ttf-dejavu tzdata unzip util-linux zlib" \
     PERL_PKGS="perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd" \
-    PHP_PKGS="php5-fpm php5-ctype php5-cgi php5-common php5-dom php5-iconv php5-imap php5-json php5-ldap php5-mysql php5-pgsql php5-pdo php5-pdo_dblib php5-pdo_mysql php5-pdo_pgsql php5-pdo_sqlite php5-posix php5-sockets php5-sqlite3 php5-xml php5-xmlreader php5-xmlrpc php5-zip" \
+    PHP_PKGS="php5-fpm php5-ctype php5-cgi php5-common php5-dom php5-iconv php5-json php5-mysql php5-pgsql php5-posix php5-sockets php5-xml php5-xmlreader php5-xmlrpc php5-zip" \
     NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mrtg mysql nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync"
 
 LABEL version=$VERSION
 
 # Add configuration and customizations
-COPY docker-entrypoint.sh /usr/local/bin/
 COPY build /tmp/
 
 
-# Download tarball, verify it using gpg and extract
 # Install dependencies
 # Nagios is run with user `nagios`, uid = 1001
 # Add directory for sessions to allow session persistence
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
-RUN set -o xtrace \
-    \
-    && chmod u+rwx /usr/local/bin/docker-entrypoint.sh \
-    && ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh \
+RUN set -o errexit \
     \
     && apk update \
     && apk add --no-cache $CORE_PKGS $PERL_PKGS $PHP_PKGS $NAGIOS_PKGS \
@@ -52,8 +47,8 @@ RUN set -o xtrace \
     && cp /usr/share/zoneinfo/$TZ /etc/timezone \
     && cp /usr/share/zoneinfo/$TZ /etc/localtime \
     \
-    && chmod u+rwx /tmp/build_nagios.sh \
-    && /tmp/build_nagios.sh \
+    && chmod u+rwx /tmp/build_container.sh \
+    && /tmp/build_container.sh \
     && rm -rf /tmp/* \
     \
     && apk del .buildDepedencies 

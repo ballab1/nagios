@@ -1,6 +1,6 @@
-*.log
 README.md
 docker-compose.yml
 .git*
-x/*
-log/*
+.lfs*
+vols/*
+*.log

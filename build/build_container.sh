@@ -5,13 +5,11 @@ set -o errexit
 set -o nounset 
 #set -o verbose
 
-export TZ=America/New_York
-export DBUSER="${DBUSER?'Envorinment variable DBUSER must be defined'}"
-export DBPASS="${DBPASS?'Envorinment variable DBPASS must be defined'}"
-export DBHOST="${DBHOST:-'mysql'}" 
-export DBNAME="${DBNAME:-'nconf'}" 
+declare -r CONTAINER='NAGIOS'
 
-declare TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
+export TZ=America/New_York
+declare -r TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
+
 
 # Alpine Packages
 declare -r BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers musl-utils rrdtool-dev"
@@ -110,22 +108,6 @@ function die() {
 }  
 
 #############################################################################
-function installAlpinePackages()
-{
-    apk update
-    apk add --no-cache $CORE_PKGS $PERL_PKGS $PHP_PKGS $NAGIOS_PKGS
-    apk add --no-cache --virtual .buildDepedencies $BUILDTIME_PKGS
-}
-
-#############################################################################
-function installTimezone()
-{
-    echo "$TZ" > /etc/TZ
-    cp /usr/share/zoneinfo/$TZ /etc/timezone
-    cp /usr/share/zoneinfo/$TZ /etc/localtime
-}
-
-#############################################################################
 function cleanup()
 {
     printf "\nclean up\n"
@@ -222,7 +204,13 @@ function fixupNginxLogDirectory()
     fi
 }
 
-
+#############################################################################
+function header()
+{
+    local -r bars='+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    printf "\n\n\e[1;34m%s\nBuilding container: \e[0m%s\e[1;34m\n%s\e[0m\n" $bars $CONTAINER $bars
+}
+ 
 #############################################################################
 function install_CUSTOMIZATIONS()
 {
@@ -246,7 +234,6 @@ function install_CUSTOMIZATIONS()
     [[ -d /var/run/php ]]                || mkdir -p /var/run/php
     [[ -d /run/nginx ]]                  || mkdir -p /run/nginx
 }
-
 
 #############################################################################
 function install_NAGIOS()
@@ -281,7 +268,6 @@ function install_NAGIOS()
     mv /usr/lib/nagios/plugins/* "${NAGIOS_HOME}/libexec/"
 }
 
-
 #############################################################################
 function install_NAGIOS_OBJECT()
 {
@@ -315,7 +301,6 @@ function install_NCONF()
     mkdir -p "${NCONF_HOME}/temp"
 }
 
-
 #############################################################################
 function install_NAGIOS_PLUGINS()
 {
@@ -330,7 +315,6 @@ function install_NAGIOS_PLUGINS()
     make
     make install
 }
-
 
 #############################################################################
 function install_NAGIOSGRAPH()
@@ -362,7 +346,6 @@ function install_NAGIOSGRAPH()
     ln -s "${NAGIOS_HOME}/etc/nagiosgraph/nagiosgraph.conf" "${NAGIOS_HOME}/sbin/"
 }
 
-
 #############################################################################
 function install_PHP()
 {
@@ -378,6 +361,21 @@ function install_PHP()
     make install
 }
 
+#############################################################################
+function installAlpinePackages()
+{
+    apk update
+    apk add --no-cache $CORE_PKGS $PERL_PKGS $PHP_PKGS $NAGIOS_PKGS
+    apk add --no-cache --virtual .buildDepedencies $BUILDTIME_PKGS
+}
+
+#############################################################################
+function installTimezone()
+{
+    echo "$TZ" > /etc/TZ
+    cp /usr/share/zoneinfo/$TZ /etc/timezone
+    cp /usr/share/zoneinfo/$TZ /etc/localtime
+}
 
 #############################################################################
 function setPermissions()
@@ -420,7 +418,6 @@ www_group='nobody'
     chown "${www_user}:${www_group}" -R "${WWW}"
 }
 
-
 #############################################################################
 
 trap catch_error ERR
@@ -429,12 +426,16 @@ trap catch_pipe PIPE
 
 set -o verbose
 
+header
+export DBUSER="${DBUSER?'Envorinment variable DBUSER must be defined'}"
+export DBPASS="${DBPASS?'Envorinment variable DBPASS must be defined'}"
+export DBHOST="${DBHOST:-'mysql'}" 
+export DBNAME="${DBNAME:-'nconf'}" 
+
 installAlpinePackages
 installTimezone
-
 createUserAndGroup "${www_user}" "${www_uid}" "${www_group}" "${www_gid}" "${WWW}" /sbin/nologin
 createUserAndGroup "${nagios_user}" "${nagios_uid}" "${nagios_group}" "${nagios_gid}" "${NAGIOS_HOME}" /bin/bash
-
 downloadFiles
 fixupNginxLogDirectory
 #install_PHP

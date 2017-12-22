@@ -5,8 +5,12 @@ services:
         build:
             context: ../nagios
             args:
-                TZ: "America/New_York"
-        image: nagios:20171219
+                TZ: "America/New_York"  
+                DBUSER: ${CFG_MYSQL_USER}
+                DBPASS: ${CFG_MYSQL_PASSWORD}
+                DBHOST: 'mysql'
+                DBNAME: 'nconf'
+        image: nagios:20171222
         container_name: nagios
         hostname: nagios
         restart: unless-stopped

@@ -5,22 +5,28 @@ services:
         build:
             context: ../nagios
             args:
-                TZ: "America/New_York"
-        image: nagios:20171210
+                TZ: "America/New_York"  
+                DBUSER: ${CFG_MYSQL_USER}
+                DBPASS: ${CFG_MYSQL_PASSWORD}
+                DBHOST: 'mysql'
+                DBNAME: 'nconf'
+        image: nagios:20171222
         container_name: nagios
         hostname: nagios
-#        restart: unless-stopped
+        restart: unless-stopped
         environment:
             TZ: "America/New_York"
             DBHOST: "172.18.0.5"
             DBNAME: "nconf"
             DBUSER: ${CFG_MYSQL_USER}
             DBPASS: ${CFG_MYSQL_PASSWORD}
+        links:
+            - mysql
         volumes:
-            - ../nagios/archives:/usr/local/nagios/var/archives
-            - ../nagios/rrd:/usr/local/nagios/var/rrd
-            - ../nagios/config:/usr/local/nagios/share/nconf/output
-            - ../nagios/log:/var/log
+            - ../nagios/vols/archives:/usr/local/nagios/var/archives
+            - ../nagios/vols/rrd:/usr/local/nagios/var/rrd
+            - ../nagios/vols/config:/usr/local/nagios/share/nconf/output
+            - ../nagios/vols/log:/var/log
         ports:
             - 25:25
             - 8003:80

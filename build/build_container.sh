@@ -5,7 +5,19 @@ set -o errexit
 set -o nounset 
 #set -o verbose
 
-declare TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
+declare -r CONTAINER='NAGIOS'
+
+export TZ=America/New_York
+declare -r TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
+
+
+# Alpine Packages
+declare -r BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers musl-utils rrdtool-dev"
+declare -r CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client shadow sudo supervisor ttf-dejavu tzdata unzip util-linux zlib"
+declare -r PERL_PKGS="perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd"
+declare -r PHP_PKGS="php5-fpm php5-ctype php5-cgi php5-common php5-dom php5-iconv php5-json php5-mysql php5-pgsql php5-posix php5-sockets php5-xml php5-xmlreader php5-xmlrpc php5-zip"
+declare -r NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mrtg mysql nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync"
+
 
 # Nagios NConf
 declare -r NCONF_VERSION=${NCONF_VERSION:-'1.3.0-0'}
@@ -44,22 +56,21 @@ declare -r PHP_URL="http://us2.php.net/get/php-${PHP_VERSION}.tar.gz/from/this/m
 declare -r PHP_SHA256="6687ed2f09150b2ad6b3780ff89715891f83a9c331e69c90241ef699dec4c43f"
 
 
-
 #directories
-declare NAGIOS_HOME=/usr/local/nagios
-declare NGRAPH_HOME=/usr/local/nagiosgraph
-declare NCONF_HOME=/usr/local/nagios/share/nconf
-declare WWW=/usr/local/nagios/share 
+declare -r NAGIOS_HOME=/usr/local/nagios
+declare -r NGRAPH_HOME=/usr/local/nagiosgraph
+declare -r NCONF_HOME=/usr/local/nagios/share/nconf
+declare -r WWW=/usr/local/nagios/share 
 
 #  groups/users
 declare www_user=${www_user:-'www-data'}
-declare www_uid=${www_uid:-82}
+declare -r www_uid=${www_uid:-82}
 declare www_group=${www_group:-'www-data'}
-declare www_gid=${www_gid:-82}
-declare nagios_user=${nagios_user:-'nagios'}
-declare nagios_uid=${nagios_uid:-1002}
-declare nagios_group=${nagios_group:-'nagios'}
-declare nagios_gid=${nagios_gid:-1002}
+declare -r www_gid=${www_gid:-82}
+declare -r nagios_user=${nagios_user:-'nagios'}
+declare -r nagios_uid=${nagios_uid:-1002}
+declare -r nagios_group=${nagios_group:-'nagios'}
+declare -r nagios_gid=${nagios_gid:-1002}
 
 # global exceptions
 declare -i dying=0
@@ -100,12 +111,14 @@ function die() {
 function cleanup()
 {
     printf "\nclean up\n"
+
+    apk del .buildDepedencies 
+
     rm -rf /usr/local/php/man
     rm -rf /usr/local/include
     rm -rf /usr/local/nagios/include
     rm -rf /usr/local/nagios/share/docs
     rm -rf /usr/include
-    rm -rf /tmp/*
 }
 
 
@@ -118,20 +131,33 @@ function createUserAndGroup()
     local -r gid=$4
     local -r homedir=$5
     local -r shell=$6
+    local result
+    
+    local wanted=$( printf '%s:%s' $group $gid )
+    local nameMatch=$( getent group "${group}" | awk -F ':' '{ printf "%s:%s",$1,$3 }' )
+    local idMatch=$( getent group "${gid}" | awk -F ':' '{ printf "%s:%s",$1,$3 }' )
+    printf "\e[1;34mINFO: group/gid (%s):  is currently (%s)/(%s)\e[0m\n" "$wanted" "$nameMatch" "$idMatch"           
 
-    printf "\ncreate group:  %s\n" $group
-    if [[ "$(cat /etc/group | grep -E ":${gid}:")" ]]; then
-        [[  "$(cat /etc/group | grep -E "^${group}:x:${gid}:")"  ]] || exit 1
+    if [[ $wanted != $nameMatch  ||  $wanted != $idMatch ]]; then
+        printf "\ncreate group:  %s\n" $group
+        [[ "$nameMatch"  &&  $wanted != $nameMatch ]] && groupdel "$( getent group ${group} | awk -F ':' '{ print $1 }' )"
+        [[ "$idMatch"    &&  $wanted != $idMatch ]]   && groupdel "$( getent group ${gid} | awk -F ':' '{ print $1 }' )"
+        /usr/sbin/groupadd --gid "${gid}" "${group}"
     fi
-    [[ "$(cat /etc/group | grep -E "^${group}:")" ]] \
-       ||  /usr/sbin/groupadd --gid "${gid}" "${group}"
 
-    printf "create user: %s\n" $user
-    if [[ "$(cat /etc/passwd | grep -E ":${uid}:")" ]]; then
-        [[ "$(cat /etc/passwd | grep -E "^${user}:x:${uid}:${gid}:")" ]] || exit 1
+    
+    wanted=$( printf '%s:%s' $user $uid )
+    nameMatch=$( getent passwd "${user}" | awk -F ':' '{ printf "%s:%s",$1,$3 }' )
+    idMatch=$( getent passwd "${uid}" | awk -F ':' '{ printf "%s:%s",$1,$3 }' )
+    printf "\e[1;34mINFO: user/uid (%s):  is currently (%s)/(%s)\e[0m\n" "$wanted" "$nameMatch" "$idMatch"    
+    
+    if [[ $wanted != $nameMatch  ||  $wanted != $idMatch ]]; then
+        printf "create user: %s\n" $user
+        [[ "$nameMatch"  &&  $wanted != $nameMatch ]] && userdel "$( getent passwd ${user} | awk -F ':' '{ print $1 }' )"
+        [[ "$idMatch"    &&  $wanted != $idMatch ]]   && userdel "$( getent passwd ${uid} | awk -F ':' '{ print $1 }' )"
+
+        /usr/sbin/useradd --home-dir "$homedir" --uid "${uid}" --gid "${gid}" --no-create-home --shell "${shell}" "${user}"
     fi
-    [[ "$(cat /etc/passwd | grep -E "^${user}:")" ]] \
-       ||  /usr/sbin/useradd --home-dir "$homedir" --uid "${uid}" --gid "${gid}" --no-create-home --shell "${shell}" "${user}"
 }
 
 #############################################################################
@@ -168,7 +194,7 @@ function downloadFiles()
 }
 
 #############################################################################
-function fixupNginxLogDirecory()
+function fixupNginxLogDirectory()
 {
     printf "\nfix default log directory for nginx\n"
     if [[ -h /var/lib/nginx ]]; then
@@ -178,14 +204,26 @@ function fixupNginxLogDirecory()
     fi
 }
 
-
 #############################################################################
-function installCUSTOMIZATIONS()
+function header()
+{
+    local -r bars='+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    printf "\n\n\e[1;34m%s\nBuilding container: \e[0m%s\e[1;34m\n%s\e[0m\n" $bars $CONTAINER $bars
+}
+ 
+#############################################################################
+function install_CUSTOMIZATIONS()
 {
     printf "\nAdd configuration and customizations\n"
+
+    rm /var/lib/nginx/logs
+    ln -s /var/log /var/lib/nginx/logs
+
     cp -r "${TOOLS}/etc"/* /etc
     cp -r "${TOOLS}/usr"/* /usr
     cp -r "${TOOLS}/var"/* /var
+
+    ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh
     
     if [[ -h /var/lib/nginx/logs ]]; then
         rm /var/lib/nginx/logs
@@ -197,9 +235,8 @@ function installCUSTOMIZATIONS()
     [[ -d /run/nginx ]]                  || mkdir -p /run/nginx
 }
 
-
 #############################################################################
-function installNAGIOS()
+function install_NAGIOS()
 {
     local -r file="$NCORE_FILE"
 
@@ -229,13 +266,10 @@ function installNAGIOS()
 
     mkdir -p "${NAGIOS_HOME}/libexec/"
     mv /usr/lib/nagios/plugins/* "${NAGIOS_HOME}/libexec/"
-    rm /var/lib/nginx/logs
-    ln -s /var/log /var/lib/nginx/logs
 }
 
-
 #############################################################################
-function installNAGIOS_OBJECT()
+function install_NAGIOS_OBJECT()
 {
     local -r file="$NOBJECT_FILE"
 
@@ -248,7 +282,7 @@ function installNAGIOS_OBJECT()
 
 
 #############################################################################
-function installNCONF()
+function install_NCONF()
 {
     local -r file="$NCONF_FILE"
 
@@ -267,9 +301,8 @@ function installNCONF()
     mkdir -p "${NCONF_HOME}/temp"
 }
 
-
 #############################################################################
-function installNAGIOS_PLUGINS()
+function install_NAGIOS_PLUGINS()
 {
     local -r file="$NPLUG_FILE"
 
@@ -283,9 +316,8 @@ function installNAGIOS_PLUGINS()
     make install
 }
 
-
 #############################################################################
-function installNAGIOSGRAPH()
+function install_NAGIOSGRAPH()
 {
     local -r file="$NGRAPH_FILE"
 
@@ -314,9 +346,8 @@ function installNAGIOSGRAPH()
     ln -s "${NAGIOS_HOME}/etc/nagiosgraph/nagiosgraph.conf" "${NAGIOS_HOME}/sbin/"
 }
 
-
 #############################################################################
-function installPHP()
+function install_PHP()
 {
     local -r file="$PHP_FILE"
 
@@ -330,6 +361,21 @@ function installPHP()
     make install
 }
 
+#############################################################################
+function installAlpinePackages()
+{
+    apk update
+    apk add --no-cache $CORE_PKGS $PERL_PKGS $PHP_PKGS $NAGIOS_PKGS
+    apk add --no-cache --virtual .buildDepedencies $BUILDTIME_PKGS
+}
+
+#############################################################################
+function installTimezone()
+{
+    echo "$TZ" > /etc/TZ
+    cp /usr/share/zoneinfo/$TZ /etc/timezone
+    cp /usr/share/zoneinfo/$TZ /etc/localtime
+}
 
 #############################################################################
 function setPermissions()
@@ -339,6 +385,7 @@ function setPermissions()
     chown root:root /etc/sudoers.d/*
     chmod 600 /etc/sudoers.d/*
 
+    chmod u+rwx /usr/local/bin/docker-entrypoint.sh
 
     chmod 775 "${NAGIOS_HOME}/sbin"/*
     chmod 755 "${NAGIOS_HOME}/bin"/*
@@ -349,14 +396,8 @@ function setPermissions()
     chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/var"
 
 
-    www_user='nobody'
-    chown "${www_user}:${www_user}" -R /var/nginx/client_body_temp
-    chown "${www_user}:${www_user}" -R /sessions
-    chown "${www_user}:${www_user}" -R /var/run/php
-
     find "${WWW}" -type d -exec chmod 755 {} \;
     find "${WWW}" -type f -exec chmod 644 {} \;
-    chown -R "${www_user}:${www_user}" "${WWW}"
 
     chmod 755 -R "${WWW}/nconf/bin"/*
     find "${WWW}/nconf/config" -type d -exec chmod 777 {} \;
@@ -366,8 +407,16 @@ function setPermissions()
     find "${WWW}/nconf/static_cfg" -type d -exec chmod 777 {} \;
     find "${WWW}/nconf/static_cfg" -type f -exec chmod 666 {} \;
     find "${WWW}/nconf/temp" -type d -exec chmod 777 {} \;
-}
 
+
+www_user='nobody'
+www_group='nobody'
+    chown "${www_user}:${www_group}" -R /var/nginx/client_body_temp
+    chown "${www_user}:${www_group}" -R /sessions
+    chown "${www_user}:${www_group}" -R /var/run/php
+    chown "${www_user}:${www_group}" -R /var/log
+    chown "${www_user}:${www_group}" -R "${WWW}"
+}
 
 #############################################################################
 
@@ -377,18 +426,25 @@ trap catch_pipe PIPE
 
 set -o verbose
 
+header
+export DBUSER="${DBUSER?'Envorinment variable DBUSER must be defined'}"
+export DBPASS="${DBPASS?'Envorinment variable DBPASS must be defined'}"
+export DBHOST="${DBHOST:-'mysql'}" 
+export DBNAME="${DBNAME:-'nconf'}" 
+
+installAlpinePackages
+installTimezone
 createUserAndGroup "${www_user}" "${www_uid}" "${www_group}" "${www_gid}" "${WWW}" /sbin/nologin
 createUserAndGroup "${nagios_user}" "${nagios_uid}" "${nagios_group}" "${nagios_gid}" "${NAGIOS_HOME}" /bin/bash
-
 downloadFiles
-fixupNginxLogDirecory
-#installPHP
-installNAGIOS
-#installNAGIOS_PLUGINS
-installNAGIOS_OBJECT
-installNCONF
-installNAGIOSGRAPH
-installCUSTOMIZATIONS
+fixupNginxLogDirectory
+#install_PHP
+install_NAGIOS
+#install_NAGIOS_PLUGINS
+install_NAGIOS_OBJECT
+install_NCONF
+install_NAGIOSGRAPH
+install_CUSTOMIZATIONS
 setPermissions
 cleanup
 exit 0

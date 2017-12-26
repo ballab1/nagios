@@ -23,8 +23,16 @@ function setPermissionsOnVolumes()
     sudo chmod 777 -R /var/log
 }
 
+function setHtPasswd
+{
+    sudo sed -i "s|nagiosadmin|${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    sudo rm "${NAGIOS_HOME}/etc/htpasswd.users"
+    echo "${DBPASS}" | htpasswd -c "${NAGIOS_HOME}/etc/htpasswd.users" "${DBUSER}"
+    chmod 444 "${NAGIOS_HOME}/etc/htpasswd.users"
+}
 
 if [ "$1" = 'nagios' ]; then
+    setHtPasswd
     setPermissionsOnVolumes
     exec supervisord --nodaemon --configuration="/etc/supervisord.conf" --loglevel=info
 else

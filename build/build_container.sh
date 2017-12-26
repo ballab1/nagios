@@ -13,7 +13,7 @@ declare -r TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Alpine Packages
 declare -r BUILDTIME_PKGS="alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers musl-utils rrdtool-dev"
-declare -r CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client shadow sudo supervisor ttf-dejavu tzdata unzip util-linux zlib"
+declare -r CORE_PKGS="bash curl findutils libxml2 mysql-client nginx openssh-client shadow sudo supervisor thttpd ttf-dejavu tzdata unzip util-linux zlib"
 declare -r PERL_PKGS="perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd"
 declare -r PHP_PKGS="php5-fpm php5-ctype php5-cgi php5-common php5-dom php5-iconv php5-json php5-mysql php5-pgsql php5-posix php5-sockets php5-xml php5-xmlreader php5-xmlrpc php5-zip"
 declare -r NAGIOS_PKGS="fcgiwrap freetype gd jpeg libpng mrtg mysql nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync"
@@ -386,7 +386,7 @@ function setPermissions()
     chmod 600 /etc/sudoers.d/*
 
     chmod u+rwx /usr/local/bin/docker-entrypoint.sh
-
+    
     chmod 775 "${NAGIOS_HOME}/sbin"/*
     chmod 755 "${NAGIOS_HOME}/bin"/*
     find "${NAGIOS_HOME}/etc" -type d -exec chmod 777 {} \;
@@ -394,6 +394,11 @@ function setPermissions()
     chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/etc"
     chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/sbin"/*
     chown "${nagios_user}":"${nagios_user}" -R "${NAGIOS_HOME}/var"
+
+    sed -i "s|nagiosadmin|${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    [[ -e "${NAGIOS_HOME}/etc/htpasswd.users" ]]  && rm "${NAGIOS_HOME}/etc/htpasswd.users"
+    echo "${DBPASS}" | htpasswd -c "${NAGIOS_HOME}/etc/htpasswd.users" "${DBUSER}"
+    chmod 444 "${NAGIOS_HOME}/etc/htpasswd.users"
 
 
     find "${WWW}" -type d -exec chmod 755 {} \;
@@ -427,11 +432,10 @@ trap catch_pipe PIPE
 set -o verbose
 
 header
-export DBUSER="${DBUSER?'Envorinment variable DBUSER must be defined'}"
-export DBPASS="${DBPASS?'Envorinment variable DBPASS must be defined'}"
-export DBHOST="${DBHOST:-'mysql'}" 
-export DBNAME="${DBNAME:-'nconf'}" 
-
+declare -r DBUSER="${DBUSER?'Envorinment variable DBUSER must be defined'}"
+declare -r DBPASS="${DBPASS?'Envorinment variable DBPASS must be defined'}"
+declare -r DBHOST="${DBHOST:-'mysql'}" 
+declare -r DBNAME="${DBNAME:-'nconf'}" 
 installAlpinePackages
 installTimezone
 createUserAndGroup "${www_user}" "${www_uid}" "${www_group}" "${www_gid}" "${WWW}" /sbin/nologin

@@ -33,5 +33,5 @@ EXPOSE 25
 USER $nagios_user
 WORKDIR $NAGIOS_HOME
 
-ENTRYPOINT [ "/docker-entrypoint.sh" ]
+ENTRYPOINT [ "docker-entrypoint.sh" ]
 CMD ["nagios"]

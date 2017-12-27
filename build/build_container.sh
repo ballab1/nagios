@@ -8,6 +8,7 @@ set -o nounset
 declare -r CONTAINER='NAGIOS'
 
 export TZ=America/New_York
+export SESSIONS_DIR='/sessions'
 declare -r TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
 
 
@@ -37,23 +38,11 @@ declare -r NGRAPH_FILE="nagiosgraph-${NGRAPH_VERSION}.tar.gz"
 declare -r NGRAPH_URL="https://sourceforge.net/projects/nagiosgraph/files/nagiosgraph/${NGRAPH_VERSION}/nagiosgraph-${NGRAPH_VERSION}.tar.gz/download"
 declare -r NGRAPH_SHA256="c466193233a4affbd32f882d8cb475ef2d1e9bf091a21fbf3fccd1f825d7450e"
 
-# Nagios Plugins
-declare -r NPLUGIN_VERSION=${NPLUGIN_VERSION:-'2.2.1'}
-declare -r NPLUGIN_FILE="nagios-plugins-${NPLUGIN_VERSION}.tar.gz"
-declare -r NPLUGIN_URL="https://nagios-plugins.org/download/nagios-plugins-${NPLUGIN_VERSION}.tar.gz"
-declare -r NPLUGIN_SHA256="647c0ba4583d891c965fc29b77c4ccfeccc21f409fdf259cb8af52cb39c21e18"
-
 # Nagios::Object perl module
 declare -r NOBJECT_VERSION=${NOBJECT_VERSION:-'0.21.20'}
 declare -r NOBJECT_FILE="Nagios-Object-${NOBJECT_VERSION}.tar.gz"
 declare -r NOBJECT_URL="http://search.cpan.org/CPAN/authors/id/D/DU/DUNCS/Nagios-Object-${NOBJECT_VERSION}.tar.gz"
 declare -r NOBJECT_SHA256="20555203a13644474476078ff50469902ac4710d6ec487cb46e8594a1001057f"
-
-# PHP
-declare -r PHP_VERSION=${PHP_VERSION:-'5.6.31'}    
-declare -r PHP_FILE="php-${PHP_VERSION}.tar.gz"
-declare -r PHP_URL="http://us2.php.net/get/php-${PHP_VERSION}.tar.gz/from/this/mirror"
-declare -r PHP_SHA256="6687ed2f09150b2ad6b3780ff89715891f83a9c331e69c90241ef699dec4c43f"
 
 
 #directories
@@ -185,9 +174,7 @@ function downloadFiles()
 {
     cd ${TOOLS}
 
-    #downloadFile 'PHP'
     downloadFile 'NCORE'
-    #downloadFile 'NPLUGIN'
     downloadFile 'NOBJECT'
     downloadFile 'NCONF'
     downloadFile 'NGRAPH' 
@@ -230,9 +217,12 @@ function install_CUSTOMIZATIONS()
         ln -s /var/log /var/lib/nginx/logs
     fi
     [[ -d /var/nginx/client_body_temp ]] || mkdir -p /var/nginx/client_body_temp
-    [[ -d /sessions ]]                   || mkdir -p /sessions
+    [[ -d "${SESSIONS_DIR}" ]]           || mkdir -p "${SESSIONS_DIR}"
     [[ -d /var/run/php ]]                || mkdir -p /var/run/php
     [[ -d /run/nginx ]]                  || mkdir -p /run/nginx
+    
+    sed -i "s|^.*date.timezone =.*$|date.timezone = ${TZ}|" '/etc/myconf/php.ini'
+    sed -i "s|^.*session.save_path =.*$|session.save_path = \"${SESSIONS_DIR}\"|" '/etc/myconf/php.ini'
 }
 
 #############################################################################
@@ -347,21 +337,6 @@ function install_NAGIOSGRAPH()
 }
 
 #############################################################################
-function install_PHP()
-{
-    local -r file="$PHP_FILE"
-
-    printf "\nprepare and install %s\n" "${file}"
-    cd ${TOOLS}
-    tar xf "${file}"
-
-    cd "php-${PHP_VERSION}"
-    ./configure --enable-fpm --with-mysql --enable-zip --disable-phar --with-libxml-dir=/usr/lib --enable-sockets
-    make all
-    make install
-}
-
-#############################################################################
 function installAlpinePackages()
 {
     apk update
@@ -442,9 +417,7 @@ createUserAndGroup "${www_user}" "${www_uid}" "${www_group}" "${www_gid}" "${WWW
 createUserAndGroup "${nagios_user}" "${nagios_uid}" "${nagios_group}" "${nagios_gid}" "${NAGIOS_HOME}" /bin/bash
 downloadFiles
 fixupNginxLogDirectory
-#install_PHP
 install_NAGIOS
-#install_NAGIOS_PLUGINS
 install_NAGIOS_OBJECT
 install_NCONF
 install_NAGIOSGRAPH

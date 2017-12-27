@@ -25,11 +25,18 @@ function setPermissionsOnVolumes()
 
 function setHtPasswd
 {
-    sudo sed -i "s|nagiosadmin|${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    sudo sed -i "s|=nagiosadmin|=${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    sudo sed -i "s|^.*nagios_user=.*$|nagios_user=${DBUSER}|" \
+             -e "s|^.*nagios_group=.*$|nagios_group=${DBUSER}|" \
+                "${NAGIOS_HOME}/etc/nagios.cfg"
     sudo rm "${NAGIOS_HOME}/etc/htpasswd.users"
     echo "${DBPASS}" | htpasswd -c "${NAGIOS_HOME}/etc/htpasswd.users" "${DBUSER}"
     chmod 444 "${NAGIOS_HOME}/etc/htpasswd.users"
 }
+
+
+touch /var/log/php5-fpm.log
+chmod 666 /var/log/php5-fpm.log 
 
 if [ "$1" = 'nagios' ]; then
     setHtPasswd

@@ -7,8 +7,8 @@ set -o nounset
 
 declare -r CONTAINER='NAGIOS'
 
-export TZ=America/New_York
-export SESSIONS_DIR='/sessions'
+declare -r TZ="${TZ:-'America/New_York'}"
+declare -r SESSIONS_DIR='/sessions'
 declare -r TOOLS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"  
 
 
@@ -361,7 +361,7 @@ function setPermissions()
     chmod 600 /etc/sudoers.d/*
 
     chmod u+rwx /usr/local/bin/docker-entrypoint.sh
-    
+
     chmod 775 "${NAGIOS_HOME}/sbin"/*
     chmod 755 "${NAGIOS_HOME}/bin"/*
     find "${NAGIOS_HOME}/etc" -type d -exec chmod 777 {} \;

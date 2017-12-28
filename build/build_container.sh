@@ -408,8 +408,8 @@ trap catch_pipe PIPE
 set -o verbose
 
 header
-declare -r DBUSER="${DBUSER?'Envorinment variable DBUSER must be defined'}"
-declare -r DBPASS="${DBPASS?'Envorinment variable DBPASS must be defined'}"
+declare -r DBUSER="${DBUSER:?'Envorinment variable DBUSER must be defined'}"
+declare -r DBPASS="${DBPASS:?'Envorinment variable DBPASS must be defined'}"
 declare -r DBHOST="${DBHOST:-'mysql'}" 
 declare -r DBNAME="${DBNAME:-'nconf'}" 
 installAlpinePackages

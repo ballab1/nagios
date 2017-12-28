@@ -212,6 +212,7 @@ function install_CUSTOMIZATIONS()
 
     ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh
     
+    [[ -f /etc/conf.d/nginx/default.conf ]]  && rm /etc/nginx/conf.d/default.conf
     if [[ -h /var/lib/nginx/logs ]]; then
         rm /var/lib/nginx/logs
         ln -s /var/log /var/lib/nginx/logs

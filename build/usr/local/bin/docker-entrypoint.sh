@@ -23,7 +23,6 @@ function setPermissionsOnVolumes()
     sudo chmod 777 -R /var/log
 }
 
-<<<<<<< HEAD
 function setHtPasswd
 {
     sudo sed -i "s|=nagiosadmin|=${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
@@ -41,10 +40,6 @@ chmod 666 /var/log/php5-fpm.log
 
 if [ "$1" = 'nagios' ]; then
     setHtPasswd
-=======
-
-if [ "$1" = 'nagios' ]; then
->>>>>>> master
     setPermissionsOnVolumes
     exec supervisord --nodaemon --configuration="/etc/supervisord.conf" --loglevel=info
 else

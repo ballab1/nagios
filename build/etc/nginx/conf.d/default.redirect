@@ -1,6 +1,6 @@
 
 location ~* .(gd2|jpg|jpeg|png|gif|ico|css|js)$ {
-    rewrite /nagios/images/logos/base/(.*)$ /nagios/images/logos/$1;
+    rewrite /images/logos/base/(.*)$ /images/logos/$1;
     expires 365d;
 }
 

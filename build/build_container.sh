@@ -203,15 +203,13 @@ function install_CUSTOMIZATIONS()
 {
     printf "\nAdd configuration and customizations\n"
 
-    rm /var/lib/nginx/logs
-    ln -s /var/log /var/lib/nginx/logs
+    declare -a DIRECTORYLIST="/etc /usr /opt /var"
+    for dir in ${DIRECTORYLIST}; do
+        [[ -d "${TOOLS}/${dir}" ]] && cp -r "${TOOLS}/${dir}/"* "${dir}/"
+    done
+	
+    ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh 
 
-    cp -r "${TOOLS}/etc"/* /etc
-    cp -r "${TOOLS}/usr"/* /usr
-    cp -r "${TOOLS}/var"/* /var
-
-    ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh
-    
     [[ -f /etc/conf.d/nginx/default.conf ]]  && rm /etc/nginx/conf.d/default.conf
     if [[ -h /var/lib/nginx/logs ]]; then
         rm /var/lib/nginx/logs

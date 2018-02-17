@@ -1,4 +1,4 @@
-ARG FROM_BASE=base_container:20180210
+ARG FROM_BASE=base_container:20180217
 FROM $FROM_BASE
 
 ARG DBUSER="${CFG_MYSQL_USER}"
@@ -7,7 +7,7 @@ ARG DBHOST='mysql'
 ARG DBNAME='nconf'
 
 # version of this docker image
-ARG CONTAINER_VERSION=1.0.0 
+ARG CONTAINER_VERSION=1.0.2
 LABEL version=$CONTAINER_VERSION  
 
 ENV NAGIOS_HOME=/usr/local/nagios
@@ -24,7 +24,7 @@ RUN rm -rf /tmp/*
 # We expose nagios on ports 80,25
 EXPOSE 25
 
-USER nagios
+#USER nagios
 WORKDIR $NAGIOS_HOME
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]

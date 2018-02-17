@@ -2,6 +2,10 @@
 
 source "${TOOLS}/04.downloads/01.NCORE"
 
+# prevent:  "#warning redirecting incorrect #include <sys/poll.h> to <poll.h>" 
+echo '#include <poll.h>' > /usr/include/sys/poll.h
+
+
 cd /tmp
 tar xf "${NCORE['file']}"
 cd "nagios-${NCORE['version']}"

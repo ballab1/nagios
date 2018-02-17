@@ -5,14 +5,14 @@ services:
         build:
             context: ../nagios
             args:
-                FROM_BASE: base_container:20180214
-                CONTAINER_VERSION: 1.0.0
+                FROM_BASE: base_container:20180217
+                CONTAINER_VERSION: 1.0.1
                 DBUSER: ${CFG_MYSQL_USER}
                 DBPASS: ${CFG_MYSQL_PASSWORD}
                 DBHOST: 'mysql'
                 DBNAME: 'nconf'
             cache_from:
-                - base_container:20180214
+                - base_container:20180217
                 - alpine:3.6                 
             context: . 
         container_name: nagios
@@ -22,7 +22,7 @@ services:
             DBUSER: ${CFG_MYSQL_USER}
             DBPASS: ${CFG_MYSQL_PASSWORD}
         hostname: nagios
-        image: nagios:20180215
+        image: nagios:20180217
         logging:
             driver: "json-file"
             options:

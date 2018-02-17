@@ -1,0 +1,17 @@
+#!/bin/bash
+
+source "${TOOLS}/04.downloads/01.NCORE"
+source "${TOOLS}/04.downloads/03.NCONF"
+
+mkdir -p "${WWW}"
+tar xf "${NCONF['file']}" -C "${WWW}" 
+
+rm -rf "${NCONF['home']}/ADD-ONS"
+rm -rf "${NCONF['home']}/config.orig"
+rm -rf "${NCONF['home']}/INSTALL"*
+rm -rf "${NCONF['home']}/UPDATE"*
+rm -rf "${NCONF['home']}/SUMS"*
+mkdir -p "${NCONF['home']}/config"
+mkdir -p "${NCONF['home']}/output"
+mkdir -p "${NCONF['home']}/static_cfg"
+mkdir -p "${NCONF['home']}/temp"

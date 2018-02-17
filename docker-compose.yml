@@ -1,37 +1,39 @@
-version: '3.1'
+version: '3.5'
 
 services:
     nagios:
         build:
             context: ../nagios
             args:
-                TZ: "America/New_York"  
+                FROM_BASE: base_container:20180214
+                CONTAINER_VERSION: 1.0.0
                 DBUSER: ${CFG_MYSQL_USER}
                 DBPASS: ${CFG_MYSQL_PASSWORD}
                 DBHOST: 'mysql'
                 DBNAME: 'nconf'
-        image: nagios:20171222
+            cache_from:
+                - base_container:20180214
+                - alpine:3.6                 
+            context: . 
         container_name: nagios
-        hostname: nagios
-        restart: unless-stopped
         environment:
-            TZ: "America/New_York"
-            DBHOST: "172.18.0.5"
-            DBNAME: "nconf"
+            DBHOST: 172.18.0.5
+            DBNAME: nconf
             DBUSER: ${CFG_MYSQL_USER}
             DBPASS: ${CFG_MYSQL_PASSWORD}
-        links:
-            - mysql
-        volumes:
-            - ../nagios/vols/archives:/usr/local/nagios/var/archives
-            - ../nagios/vols/rrd:/usr/local/nagios/var/rrd
-            - ../nagios/vols/config:/usr/local/nagios/share/nconf/output
-            - ../nagios/vols/log:/var/log
-        ports:
-            - 25:25
-            - 8003:80
+        hostname: nagios
+        image: nagios:20180215
         logging:
             driver: "json-file"
             options:
                 max-size: "10m"
                 max-file: "3"
+        ports:
+            - 25:25
+            - 8003:80
+        restart: unless-stopped
+        volumes:
+            - ../nagios/vols/archives:/usr/local/nagios/var/archives
+            - ../nagios/vols/rrd:/usr/local/nagios/var/rrd
+            - ../nagios/vols/config:/usr/local/nagios/share/nconf/output
+            - ../nagios/vols/log:/var/log

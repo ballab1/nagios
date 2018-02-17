@@ -1,0 +1,2 @@
+# build Packages
+apk add --no-cache --virtual .buildDepedencies alpine-sdk bash-completion busybox file gd-dev git gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers musl-utils rrdtool-dev

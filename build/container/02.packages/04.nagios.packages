@@ -1,0 +1,3 @@
+# nagios packages
+apk add --no-cache fcgiwrap freetype gd jpeg libpng mrtg mysql nagios-plugins-all
+apk add --no-cache rrdtool rrdtool-cgi rrdtool-utils rsync

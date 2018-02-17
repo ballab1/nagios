@@ -1,0 +1,8 @@
+# Nagios::Object perl module
+
+declare -A NOBJECT=()
+
+NOBJECT['version']=${NOBJECT_VERSION:-0.21.20}
+NOBJECT['file']="/tmp/Nagios-Object-${NOBJECT['version']}.tar.gz"
+NOBJECT['url']="http://search.cpan.org/CPAN/authors/id/D/DU/DUNCS/Nagios-Object-${NOBJECT['version']}.tar.gz"
+NOBJECT['sha256']="20555203a13644474476078ff50469902ac4710d6ec487cb46e8594a1001057f"

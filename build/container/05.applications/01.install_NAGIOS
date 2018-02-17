@@ -1,0 +1,29 @@
+#!/bin/bash
+
+source "${TOOLS}/04.downloads/01.NCORE"
+
+cd /tmp
+tar xf "${NCORE['file']}"
+cd "nagios-${NCORE['version']}"
+
+# hack Makefiles to be compatible with alpine
+while read -r fl; do
+    cat "$fl" | sed 's/unzip -u /unzip /g' >  "${fl}.new"
+    mv "${fl}.new" "$fl"
+done < <(find . -type f -exec grep -cH 'unzip -u ' '{}' \; | grep -v ':0' | awk 'BEGIN{ FS=":"; }{ printf $1 }')
+
+./configure --with-gd-inc --with-gd-lib --prefix="${NAGIOS_HOME}"
+make all
+
+make install
+make install-init
+make install-commandmode
+make install-classicui
+
+rm -rf "${NAGIOS_HOME}/etc/*"
+ln -s "${NAGIOS_HOME}/etc" /etc/nagios
+ln -s "${NAGIOS_HOME}/bin/nagios" /usr/sbin/nagios
+ln -s "${NAGIOS_HOME}/bin/nagiostats" /usr/sbin/nagiostats
+
+mkdir -p "${NAGIOS_HOME}/libexec/"
+mv /usr/lib/nagios/plugins/* "${NAGIOS_HOME}/libexec/"

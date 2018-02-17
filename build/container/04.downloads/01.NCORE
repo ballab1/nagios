@@ -1,0 +1,13 @@
+# Nagios Core
+
+declare -A NCORE=()
+
+NCORE['version']=${NCORE_VERSION:-4.3.4}
+NCORE['file']="/tmp/nagios-${NCORE['version']}.tar.gz"
+NCORE['url']="https://assets.nagios.com/downloads/nagioscore/releases/nagios-${NCORE['version']}.tar.gz"
+NCORE['sha256']="c90b7812d9e343db12be19a572e15c415c5d6353a91c5e226e432c2d4aaa44f1"
+NCORE['home']="${NCORE_HOME:-/usr/local/nagios}"
+
+#directories
+export NAGIOS_HOME="${NCORE['home']}"
+export WWW="${NCORE['home']}/share"

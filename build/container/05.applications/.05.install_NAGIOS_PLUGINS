@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source "${TOOLS}/04.downloads/05.NPLUGIN"
+
+cd ${TOOLS}
+tar xf "${NPLUGIN['file']}"
+
+cd "nagios-plugins-${NPLUGIN['version']}"
+./configure --with-mysql --with-gnutls --without-dbi --without-radius  # --with-ldap --with_pgsql=... 
+make
+make install

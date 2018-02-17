@@ -1,0 +1,4 @@
+#!/bin/bash
+
+chown nobody:nobody -R /var/nginx/client_body_temp
+chown nobody:nobody -R /var/log

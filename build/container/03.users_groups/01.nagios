@@ -1,0 +1,11 @@
+
+declare -A nagios=()
+
+declare ngs_uid=${nagios_uid:-1002}
+declare ngs_gid=${nagios_gid:-1002}
+
+nagios['user']=${nagios_user:-'nagios'}
+nagios['uid']=${ngs_uid:-$(getent passwd "${nagios['user']}" | cut -d: -f3)}
+nagios['group']=${nagios_group:-'nagios'}
+nagios['gid']=${ngs_gid:-$(getent group "${nagios['user']}" | cut -d: -f3)}
+nagios['shell']=/bin/bash

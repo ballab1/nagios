@@ -1,0 +1,20 @@
+#!/bin/bash
+
+source "${TOOLS}/03.users_groups/01.nagios"
+#source "${TOOLS}/03.users_groups/02.www"
+source "${TOOLS}/04.downloads/01.NCORE"
+
+chmod 775 "${NAGIOS_HOME}/sbin"/*
+chmod 755 "${NAGIOS_HOME}/bin"/*
+find "${NAGIOS_HOME}/etc" -type d -exec chmod 777 {} \;
+find "${NAGIOS_HOME}/etc" -type f -exec chmod 666 {} \;
+chown "${nagios['user']}":"${nagios['group']}" -R "${NAGIOS_HOME}/etc"
+chown "${nagios['user']}":"${nagios['group']}" -R "${NAGIOS_HOME}/sbin"/*
+chown "${nagios['user']}":"${nagios['group']}" -R "${NAGIOS_HOME}/var"
+
+chmod 444 "${NAGIOS_HOME}/etc/htpasswd.users"
+
+
+find "${WWW}" -type d -exec chmod 755 {} \;
+find "${WWW}" -type f -exec chmod 644 {} \;
+chown nobody:nobody -R "${WWW}"

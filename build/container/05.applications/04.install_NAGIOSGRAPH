@@ -1,0 +1,27 @@
+#!/bin/bash
+
+source "${TOOLS}/04.downloads/01.NCORE"
+source "${TOOLS}/04.downloads/04.NGRAPH"
+
+cd ${TOOLS}
+tar xf "${NGRAPH['file']}"
+
+cd "nagiosgraph-${NGRAPH['version']}"
+mkdir -p "${NAGIOS['home']}/etc/nagiosgraph"
+cp etc/*.conf etc/map "${NAGIOS['home']}/etc/nagiosgraph/"
+cp etc/*.pm "${NAGIOS['home']}/sbin/"
+cp cgi/*.cgi "${NAGIOS['home']}/sbin/"
+
+cp share/nagiosgraph.css "${WWW}"
+cp share/nagiosgraph.js "${WWW}"
+mkdir -p "${WWW}/images"
+cp share/graph.gif "${WWW}/images/"
+mv "${WWW}/images/action.gif" "${WWW}/images/action.org.gif"
+ln -s "${WWW}/images/graph.gif" "${WWW}/images/action.gif"
+mkdir -p "${WWW}/ssi"
+cp share/nagiosgraph.ssi "${WWW}/ssi/common-header.ssi"
+
+mkdir -p "${NAGIOS['home']}/var/rrd"   # Directory in which to store RRD files
+
+ln -s "${NAGIOS['home']}/etc/nagiosgraph" /etc/nagiosgraph
+ln -s "${NAGIOS['home']}/etc/nagiosgraph/nagiosgraph.conf" "${NAGIOS['home']}/sbin/"

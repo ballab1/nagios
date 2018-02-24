@@ -17,8 +17,8 @@ COPY build /tmp/
 
 # build content
 RUN set -o verbose \
-    && chmod u+rwx /tmp/container/build.sh \
-    && /tmp/container/build.sh 'NAGIOS'
+    && chmod u+rwx /tmp/build.sh \
+    && /tmp/build.sh 'NAGIOS'
 RUN rm -rf /tmp/* 
 
 # We expose nagios on ports 80,25

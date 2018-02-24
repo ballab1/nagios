@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "${CBF['action']}/03.downloads/01.NCORE"
+ 
 sed -i "s|nagiosadmin|${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
 [[ -e "${NAGIOS_HOME}/etc/htpasswd.users" ]]  && rm "${NAGIOS_HOME}/etc/htpasswd.users"
 echo "${DBPASS}" | htpasswd -c "${NAGIOS_HOME}/etc/htpasswd.users" "${DBUSER}"

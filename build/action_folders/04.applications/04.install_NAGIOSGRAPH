@@ -1,9 +1,8 @@
 #!/bin/bash
 
-source "${TOOLS}/04.downloads/01.NCORE"
-source "${TOOLS}/04.downloads/04.NGRAPH"
+source "${CBF['action']}/03.downloads/01.NCORE"
+source "${CBF['action']}/03.downloads/04.NGRAPH"
 
-cd ${TOOLS}
 tar xf "${NGRAPH['file']}"
 
 cd "nagiosgraph-${NGRAPH['version']}"

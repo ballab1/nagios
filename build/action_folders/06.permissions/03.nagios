@@ -1,8 +1,8 @@
 #!/bin/bash
 
-source "${TOOLS}/03.users_groups/01.nagios"
-#source "${TOOLS}/03.users_groups/02.www"
-source "${TOOLS}/04.downloads/01.NCORE"
+source "${CBF['action']}/02.users_groups/01.nagios"
+#source "${CBF['action']}/02.users_groups/02.www"
+source "${CBF['action']}/03.downloads/01.NCORE"
 
 chmod 775 "${NAGIOS_HOME}/sbin"/*
 chmod 755 "${NAGIOS_HOME}/bin"/*

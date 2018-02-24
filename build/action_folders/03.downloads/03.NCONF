@@ -1,6 +1,6 @@
 # Nagios NConf
 
-source "${TOOLS}/04.downloads/01.NCORE"
+source "${CBF['action']}/03.downloads/01.NCORE"
 
 declare -A NCONF=()
 

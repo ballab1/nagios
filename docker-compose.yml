@@ -3,18 +3,20 @@ version: '3.5'
 services:
     nagios:
         build:
-            context: ../nagios
             args:
-                FROM_BASE: base_container:20180217
+                CONTAINER_NAME: nagios
                 CONTAINER_VERSION: 1.0.1
+                DEBUG_TRACE: 0
                 DBUSER: ${CFG_MYSQL_USER}
                 DBPASS: ${CFG_MYSQL_PASSWORD}
-                DBHOST: 'mysql'
-                DBNAME: 'nconf'
+                DBHOST: mysql
+                DBNAME: nconf
+                FROM_BASE: base_container:20180217
             cache_from:
                 - base_container:20180217
                 - alpine:3.6                 
             context: . 
+            dockerfile: Dockerfile
         container_name: nagios
         environment:
             DBHOST: 172.18.0.5
@@ -24,16 +26,16 @@ services:
         hostname: nagios
         image: nagios:20180217
         logging:
-            driver: "json-file"
+            driver: json-file
             options:
-                max-size: "10m"
-                max-file: "3"
+                max-size: 10m
+                max-file: 3
         ports:
             - 25:25
             - 8003:80
-        restart: unless-stopped
+#        restart: unless-stopped
         volumes:
-            - ../nagios/vols/archives:/usr/local/nagios/var/archives
-            - ../nagios/vols/rrd:/usr/local/nagios/var/rrd
-            - ../nagios/vols/config:/usr/local/nagios/share/nconf/output
-            - ../nagios/vols/log:/var/log
+            - ./vols/archives:/usr/local/nagios/var/archives
+            - ./vols/rrd:/usr/local/nagios/var/rrd
+            - ./vols/config:/usr/local/nagios/share/nconf/output
+            - ./vols/log:/var/log

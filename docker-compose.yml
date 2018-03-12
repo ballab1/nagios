@@ -11,9 +11,9 @@ services:
                 DBPASS: ${CFG_MYSQL_PASSWORD}
                 DBHOST: mysql
                 DBNAME: nconf
-                FROM_BASE: base_container:20180217
+                FROM_BASE: base_container:20180311
             cache_from:
-                - base_container:20180217
+                - base_container:20180311
                 - alpine:3.6                 
             context: . 
             dockerfile: Dockerfile
@@ -24,12 +24,12 @@ services:
             DBUSER: ${CFG_MYSQL_USER}
             DBPASS: ${CFG_MYSQL_PASSWORD}
         hostname: nagios
-        image: nagios:20180217
+        image: nagios:20180311
         logging:
             driver: json-file
             options:
-                max-size: 10m
-                max-file: 3
+                max-file: "3"
+                max-size: "10m"
         ports:
             - 25:25
             - 8003:80

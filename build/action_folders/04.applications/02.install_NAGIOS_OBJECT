@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source "${CBF['action']}/03.downloads/02.NOBJECT"
-
 tar xf "${NOBJECT['file']}"
 cd "Nagios-Object-${NOBJECT['version']}"
 mv lib/Nagios /usr/local/lib/perl5/site_perl/

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source "${CBF['action']}/03.downloads/01.NCORE"
 
 # prevent:  "#warning redirecting incorrect #include <sys/poll.h> to <poll.h>" 
 echo '#include <poll.h>' > /usr/include/sys/poll.h

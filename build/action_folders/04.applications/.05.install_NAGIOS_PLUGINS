@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source "${TOOLS}/04.downloads/05.NPLUGIN"
-
 cd ${TOOLS}
 tar xf "${NPLUGIN['file']}"
 

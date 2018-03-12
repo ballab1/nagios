@@ -12,6 +12,3 @@ NGRAPH['home']="${NGRAPH_HOME:-/usr/local/nagiosgraph}"
 
 #directories
 export NGRAPH_HOME="${NGRAPH['home']}"
-
-#NCONF['url']="https://downloads.sourceforge.net/nconf/nconf-${NCONF['version']}.tar.gz" 
-#NCONF['url']="https://sourceforge.net/projects/nconf/files/nconf/${NCONF['version']}/nconf-${NCONF['version']}.tgz/download" 

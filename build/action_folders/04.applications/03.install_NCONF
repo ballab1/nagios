@@ -1,17 +1,15 @@
 #!/bin/bash
 
-source "${CBF['action']}/03.downloads/01.NCORE"
-source "${CBF['action']}/03.downloads/03.NCONF"
 
 mkdir -p "${WWW}"
-tar xf "${NCONF['file']}" -C "${WWW}" 
+tar xf "${NCONFF['file']}" -C "${WWW}" 
 
-rm -rf "${NCONF['home']}/ADD-ONS"
-rm -rf "${NCONF['home']}/config.orig"
-rm -rf "${NCONF['home']}/INSTALL"*
-rm -rf "${NCONF['home']}/UPDATE"*
-rm -rf "${NCONF['home']}/SUMS"*
-mkdir -p "${NCONF['home']}/config"
-mkdir -p "${NCONF['home']}/output"
-mkdir -p "${NCONF['home']}/static_cfg"
-mkdir -p "${NCONF['home']}/temp"
+rm -rf "${NCONFF['home']}/ADD-ONS"
+rm -rf "${NCONFF['home']}/config.orig"
+rm -rf "${NCONFF['home']}/INSTALL"*
+rm -rf "${NCONFF['home']}/UPDATE"*
+rm -rf "${NCONFF['home']}/SUMS"*
+mkdir -p "${NCONFF['home']}/config"
+mkdir -p "${NCONFF['home']}/output"
+mkdir -p "${NCONFF['home']}/static_cfg"
+mkdir -p "${NCONFF['home']}/temp"

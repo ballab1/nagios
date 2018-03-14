@@ -5,15 +5,15 @@ services:
         build:
             args:
                 CONTAINER_NAME: nagios
-                CONTAINER_VERSION: 1.0.1
+                CONTAINER_VERSION: 1.0.6
                 DEBUG_TRACE: 0
                 DBUSER: ${CFG_MYSQL_USER}
                 DBPASS: ${CFG_MYSQL_PASSWORD}
                 DBHOST: mysql
                 DBNAME: nconf
-                FROM_BASE: base_container:20180311
+                FROM_BASE: base_container:20180314
             cache_from:
-                - base_container:20180311
+                - base_container:20180314
                 - alpine:3.6                 
             context: . 
             dockerfile: Dockerfile
@@ -24,7 +24,7 @@ services:
             DBUSER: ${CFG_MYSQL_USER}
             DBPASS: ${CFG_MYSQL_PASSWORD}
         hostname: nagios
-        image: nagios:20180311
+        image: nagios:20180314
         logging:
             driver: json-file
             options:

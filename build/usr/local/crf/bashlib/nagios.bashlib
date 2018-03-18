@@ -14,8 +14,8 @@ function nagios.setPermissionsOnVolumes()
 
     www_user='nobody'
     www_group='nobody'
+    chown "${www_user}:${www_group}" -R "${NCONF_HOME}/output"
     chown "${www_user}:${www_group}" -R /var/log
-    chown "${www_user}:${www_group}" -R "${WWW}/nconf/output"
     chmod 777 -R /var/log
 }
 

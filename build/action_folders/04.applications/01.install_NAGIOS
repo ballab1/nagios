@@ -15,7 +15,7 @@ while read -r fl; do
     mv "${fl}.new" "$fl"
 done < <(find . -type f -exec grep -cH 'unzip -u ' '{}' \; | grep -v ':0' | awk 'BEGIN{ FS=":"; }{ printf $1 }')
 
-./configure --with-gd-inc --with-gd-lib --prefix="${NAGIOS_HOME}"
+./configure --with-gd-inc --with-gd-lib --prefix="${NAGIOS_HOME}" --with-lockfile=/run/nagios.lock
 make all
 
 make install

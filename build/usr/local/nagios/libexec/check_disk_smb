@@ -44,23 +44,23 @@ $ENV{'ENV'}='';
 
 Getopt::Long::Configure('bundling');
 GetOptions
-	("v"   => \$verbose, "verbose"    => \$verbose,
-	 "P=s" => \$opt_P, "port=s"     => \$opt_P,
-	 "V"   => \$opt_V, "version"    => \$opt_V,
-	 "h"   => \$opt_h, "help"       => \$opt_h,
-	 "w=s" => \$opt_w, "warning=s"  => \$opt_w,
-	 "c=s" => \$opt_c, "critical=s" => \$opt_c,
-	 "p=s" => \$opt_p, "password=s" => \$opt_p,
-	 "u=s" => \$opt_u, "username=s" => \$opt_u,
-	 "A=s" => \$opt_A, "auth_file=s" => \$opt_A,
-	 "s=s" => \$opt_s, "share=s"    => \$opt_s,
-	 "W=s" => \$opt_W, "workgroup=s" => \$opt_W,
-	 "H=s" => \$opt_H, "hostname=s" => \$opt_H,
-	 "a=s" => \$opt_a, "address=s" => \$opt_a);
+    ("v"   => \$verbose, "verbose"    => \$verbose,
+     "P=s" => \$opt_P, "port=s"     => \$opt_P,
+     "V"   => \$opt_V, "version"    => \$opt_V,
+     "h"   => \$opt_h, "help"       => \$opt_h,
+     "w=s" => \$opt_w, "warning=s"  => \$opt_w,
+     "c=s" => \$opt_c, "critical=s" => \$opt_c,
+     "p=s" => \$opt_p, "password=s" => \$opt_p,
+     "u=s" => \$opt_u, "username=s" => \$opt_u,
+     "A=s" => \$opt_A, "auth_file=s" => \$opt_A,
+     "s=s" => \$opt_s, "share=s"    => \$opt_s,
+     "W=s" => \$opt_W, "workgroup=s" => \$opt_W,
+     "H=s" => \$opt_H, "hostname=s" => \$opt_H,
+     "a=s" => \$opt_a, "address=s" => \$opt_a);
 
 if ($opt_V) {
-	print_revision($PROGNAME,'2.1.1'); #'
-	exit $ERRORS{'OK'};
+    print_revision($PROGNAME,'2.1.1'); #'
+    exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {print_help(); exit $ERRORS{'OK'};}
@@ -70,9 +70,9 @@ $smbclient    || usage("check requires smbclient, smbclient not set\n");
 -x $smbclient || usage("check requires smbclient, $smbclient: $!\n");
 
 if ($DEBUG) {
-	open (LOG, '>>', '/tmp/check_disk_smb.log');
-	print LOG "\n====================================================================\n";
-	print LOG join("\n",@ARGV)."\n";
+    open (LOG, '>>', '/var/log/check_disk_smb.log');
+    print LOG "\n====================================================================\n";
+    print LOG join("\n",@ARGV)."\n";
 }
 
 # Options checking
@@ -115,51 +115,51 @@ my $warn_type;
 my $crit_type;
 
 if ($opt_w =~ /^([0-9]+)\%?$/) {
-	$warn = "$1";
-	$warn_type = "P";
+    $warn = "$1";
+    $warn_type = "P";
 } elsif ($opt_w =~ /^([0-9]+)k$/) {
-	$warn_type = "K";
-	$warn = $1;
+    $warn_type = "K";
+    $warn = $1;
 } elsif ($opt_w =~ /^([0-9]+)M$/) {
-	$warn_type = "K";
-	$warn = $1 * 1024;
+    $warn_type = "K";
+    $warn = $1 * 1024;
 } elsif ($opt_w =~ /^([0-9]+)G$/) {
-	$warn_type = "K";
-	$warn = $1 * 1048576;
+    $warn_type = "K";
+    $warn = $1 * 1048576;
 }
 if ($opt_c =~ /^([0-9]+)\%?$/) {
-	$crit = "$1";
-	$crit_type = "P";
+    $crit = "$1";
+    $crit_type = "P";
 } elsif ($opt_c =~ /^([0-9]+)k$/) {
-	$crit_type = "K";
-	$crit = $1;
+    $crit_type = "K";
+    $crit = $1;
 } elsif ($opt_c =~ /^([0-9]+)M$/) {
-	$crit_type = "K";
-	$crit = $1 * 1024;
+    $crit_type = "K";
+    $crit = $1 * 1024;
 } elsif ($opt_c =~ /^([0-9]+)G$/) {
-	$crit_type = "K";
-	$crit = $1 * 1048576;
+    $crit_type = "K";
+    $crit = $1 * 1048576;
 }
 
 # check if both warning and critical are percentage or size
 unless( ( $warn_type eq "P" && $crit_type eq "P" ) || ( $warn_type ne "P" && $crit_type ne "P" ) ){
-	$opt_w =~ s/\%/\%\%/g;
-	$opt_c =~ s/\%/\%\%/g;
-	usage("Both warning and critical should be same type- warning: $opt_w critical: $opt_c \n");
+    $opt_w =~ s/\%/\%\%/g;
+    $opt_c =~ s/\%/\%\%/g;
+    usage("Both warning and critical should be same type- warning: $opt_w critical: $opt_c \n");
 }
 
 # verify warning is less than critical
 if ( $warn_type eq "K") {
-	unless ( $warn > $crit) {
-		usage("Disk size: warning ($opt_w) should be greater than critical ($opt_c) \n");
-	}
+    unless ( $warn > $crit) {
+        usage("Disk size: warning ($opt_w) should be greater than critical ($opt_c) \n");
+    }
 }
 else {
-	unless ( $warn < $crit) {
-		$opt_w =~ s/\%/\%\%/g;
-		$opt_c =~ s/\%/\%\%/g;
-		usage("Percentage: warning ($opt_w) should be less than critical ($opt_c) \n");
-	}
+    unless ( $warn < $crit) {
+        $opt_w =~ s/\%/\%\%/g;
+        $opt_c =~ s/\%/\%\%/g;
+        usage("Percentage: warning ($opt_w) should be less than critical ($opt_c) \n");
+    }
 }
 
 my $workgroup = undef;
@@ -180,22 +180,22 @@ my @lines = undef;
 # Execute a "du" on the share using smbclient program
 # get the results into $res
 my @cmd = (
-	$smbclient,
-	"//$host/$share",
-	defined($auth_file) ? ("-A", "$auth_file") : (),
-	defined($user) ? ("-U", "$user%$pass") : (),
-	defined($workgroup) ? ("-W", $workgroup) : (),
-	defined($address) ? ("-I", $address) : (),
-	defined($opt_P) ? ("-p", $opt_P) : (),
-	"-d", "2",
-	"-c", "du"
+    $smbclient,
+    "//$host/$share",
+    defined($auth_file) ? ("-A", "$auth_file") : (),
+    defined($user) ? ("-U", "$user%$pass") : (),
+    defined($workgroup) ? ("-W", $workgroup) : (),
+    defined($address) ? ("-I", $address) : (),
+    defined($opt_P) ? ("-p", $opt_P) : (),
+    "-d", "2",
+    "-c", "du"
 );
 
 if ($DEBUG) {
-	print LOG "\n====================================================================\n";
-	print LOG "host: $host, " if defined($host);
-	print LOG "share: $share, " if defined($share);
-	print LOG "user: $user, pass: $pass, " if defined($user);
+    print LOG "\n====================================================================\n";
+    print LOG "host: $host, " if defined($host);
+    print LOG "share: $share, " if defined($share);
+    print LOG "user: $user, pass: $pass, " if defined($user);
         print LOG "auth_file: $auth_file, " if defined($auth_file);
         print LOG "warn: $warn, " if defined($warn);
         print LOG "crit: $crit, " if defined($crit);
@@ -203,14 +203,14 @@ if ($DEBUG) {
         print LOG "address: $address, " if defined($address);
         print LOG "warn_type: $warn_type, " if defined($warn_type);
         print LOG "crit_type: $crit_type, " if defined($crit_type);
-	print LOG "\n\n----------------------\n".join(' ',@cmd)."\n";
+    print LOG "\n\n----------------------\n".join(' ',@cmd)."\n";
 }
 
 
 # Just in case of problems, let's not hang Nagios
 $SIG{'ALRM'} = sub { 
-	print "No Answer from Client\n";
-	exit $ERRORS{"UNKNOWN"};
+    print "No Answer from Client\n";
+    exit $ERRORS{"UNKNOWN"};
 };
 
 print join(" ", @cmd) . "\n" if ($verbose);
@@ -233,13 +233,13 @@ $answer = "Result from smbclient not suitable";
 $state = "UNKNOWN";
 
 foreach (@lines) {
-	my @result = parse_line($_);
-	if ($result[0] == TRUE) {
-		$perfdata = $result[1];
-		$state = $result[2];
-		$answer = $result[3];
-		last;
-	}
+    my @result = parse_line($_);
+    if ($result[0] == TRUE) {
+        $perfdata = $result[1];
+        $state = $result[2];
+        $answer = $result[3];
+        last;
+    }
 }
 
 print LOG "answer: $answer, perfdata: $perfdata, state: $state \n"  if ($DEBUG);
@@ -257,113 +257,113 @@ exit $ERRORS{$state};
 # STDERR.  (This might be useful for other plugins, too, so it should possibly
 # be moved to utils.pm.)
 sub output_and_error_of (@) {
-	local *CMD;
-	local $/ = undef;
-	my $pid = open CMD, "-|";
-	if (defined($pid)) {
-		if ($pid) {
-			return <CMD>;
-		} else {
-			open STDERR, ">&STDOUT" and exec @_;
-			exit(1);
-		}
-	}
-	return undef;
+    local *CMD;
+    local $/ = undef;
+    my $pid = open CMD, "-|";
+    if (defined($pid)) {
+        if ($pid) {
+            return <CMD>;
+        } else {
+            open STDERR, ">&STDOUT" and exec @_;
+            exit(1);
+        }
+    }
+    return undef;
 }
 
 #Process the last line to get free space.  
 #If line does not match required regexp, return an UNKNOWN error
 sub parse_line ($) {
-	my $line = shift;
-	
-	if (/(Access denied|NT_STATUS_LOGON_FAILURE|NT_STATUS_ACCESS_DENIED)/) {
-		return (TRUE, "", "CRITICAL", "Access Denied");
-	}
-	
-	if (/(Unknown host \w*|Connection.*failed)/) {
-		return (TRUE, "", "CRITICAL", "$1");
-	}
-	
-	if (/(ERROR:.*)/) {
-		return (TRUE, "", "CRITICAL", "$1");
-	}
-	
-	if (/(You specified an invalid share name|NT_STATUS_BAD_NETWORK_NAME)/) {
-		return (TRUE, "", "CRITICAL", "Invalid share name \\\\$host\\$share");
-	}
-	
-	if (/\s*(\d*) blocks of size (\d*)\. (\d*) blocks available/) {
+    my $line = shift;
+    
+    if (/(Access denied|NT_STATUS_LOGON_FAILURE|NT_STATUS_ACCESS_DENIED)/) {
+        return (TRUE, "", "CRITICAL", "Access Denied");
+    }
+    
+    if (/(Unknown host \w*|Connection.*failed)/) {
+        return (TRUE, "", "CRITICAL", "$1");
+    }
+    
+    if (/(ERROR:.*)/) {
+        return (TRUE, "", "CRITICAL", "$1");
+    }
+    
+    if (/(You specified an invalid share name|NT_STATUS_BAD_NETWORK_NAME)/) {
+        return (TRUE, "", "CRITICAL", "Invalid share name \\\\$host\\$share");
+    }
+    
+    if (/\s*(\d*) blocks of size (\d*)\. (\d*) blocks available/) {
 
-		my ($avail_bytes) = $3 * $2;
-		my ($total_bytes) = $1 * $2;
-		my ($occupied_bytes) = $1 * $2 - $avail_bytes;
-		my ($avail) = $avail_bytes/1024;
-		my ($capper) = int(($3/$1)*100);
-		my ($mountpt) = "\\\\\\\\$host\\\\$share";
+        my ($avail_bytes) = $3 * $2;
+        my ($total_bytes) = $1 * $2;
+        my ($occupied_bytes) = $1 * $2 - $avail_bytes;
+        my ($avail) = $avail_bytes/1024;
+        my ($capper) = int(($3/$1)*100);
+        my ($mountpt) = "\\\\\\\\$host\\\\$share";
 
-		# TODO : why is the kB the standard unit for args ?
-		my ($warn_bytes) = $total_bytes - $warn * 1024;
-		if ($warn_type eq "P") {
-			$warn_bytes = $warn * $1 * $2 / 100;
-		}
-		my ($crit_bytes) = $total_bytes - $crit * 1024;
-		if ($crit_type eq "P") {
-			$crit_bytes = $crit * $1 * $2 / 100;
-		}
+        # TODO : why is the kB the standard unit for args ?
+        my ($warn_bytes) = $total_bytes - $warn * 1024;
+        if ($warn_type eq "P") {
+            $warn_bytes = $warn * $1 * $2 / 100;
+        }
+        my ($crit_bytes) = $total_bytes - $crit * 1024;
+        if ($crit_type eq "P") {
+            $crit_bytes = $crit * $1 * $2 / 100;
+        }
 
 
-		if (int($avail / 1024) > 0) {
-			$avail = int($avail / 1024);
-			if (int($avail /1024) > 0) {
-				$avail = (int(($avail / 1024)*100))/100;
-				$avail = $avail ."G";
-			} else {
-				$avail = $avail ."M";
-			}
-		} else {
-			$avail = $avail ."K";
-		}
+        if (int($avail / 1024) > 0) {
+            $avail = int($avail / 1024);
+            if (int($avail /1024) > 0) {
+                $avail = (int(($avail / 1024)*100))/100;
+                $avail = $avail ."G";
+            } else {
+                $avail = $avail ."M";
+            }
+        } else {
+            $avail = $avail ."K";
+        }
 
-		#print ":$warn:$warn_type:\n";
-		#print ":$crit:$crit_type:\n";
-		#print ":$avail:$avail_bytes:$capper:$mountpt:\n";
+        #print ":$warn:$warn_type:\n";
+        #print ":$crit:$crit_type:\n";
+        #print ":$avail:$avail_bytes:$capper:$mountpt:\n";
 
-		my $sesc = $share;
-		$sesc =~ s|\\|\\\\|g;
-		my $perfdata = "'" . $sesc . "'=" . $occupied_bytes . 'B;'
-			. $warn_bytes . ';'
-			. $crit_bytes . ';'
-			. '0;'
-			. $total_bytes;
+        my $sesc = $share;
+        $sesc =~ s|\\|\\\\|g;
+        my $perfdata = "'" . $sesc . "'=" . $occupied_bytes . 'B;'
+            . $warn_bytes . ';'
+            . $crit_bytes . ';'
+            . '0;'
+            . $total_bytes;
 
-		if ($occupied_bytes > $crit_bytes) {
-			return (TRUE, $perfdata, "CRITICAL", "CRITICAL: Only $avail ($capper%) free on $mountpt");
-		}
-		
-		if ( $occupied_bytes > $warn_bytes ) {
-			return (TRUE, $perfdata, "WARNING", "WARNING: Only $avail ($capper%) free on $mountpt");
-		}
-		
-		return (TRUE, $perfdata, "OK", "Disk ok - $avail ($capper%) free on $mountpt");
-		
-	}
-	return (FALSE, "OK", undef, undef, undef);
+        if ($occupied_bytes > $crit_bytes) {
+            return (TRUE, $perfdata, "CRITICAL", "CRITICAL: Only $avail ($capper%) free on $mountpt");
+        }
+        
+        if ( $occupied_bytes > $warn_bytes ) {
+            return (TRUE, $perfdata, "WARNING", "WARNING: Only $avail ($capper%) free on $mountpt");
+        }
+        
+        return (TRUE, $perfdata, "OK", "Disk ok - $avail ($capper%) free on $mountpt");
+        
+    }
+    return (FALSE, "OK", undef, undef, undef);
 }
 
 sub print_usage () {
-	print "Usage: $PROGNAME -H <host> -s <share> -u <user> -p <password> 
+    print "Usage: $PROGNAME -H <host> -s <share> -u <user> -p <password> 
       -w <warn> -c <crit> [-W <workgroup>] [-P <port>] [-a <IP>]\n";
 }
 
 sub print_help () {
-	print_revision($PROGNAME,'2.1.1');
-	print "Copyright (c) 2000 Michael Anthon/Karl DeBisschop
+    print_revision($PROGNAME,'2.1.1');
+    print "Copyright (c) 2000 Michael Anthon/Karl DeBisschop
 
 Perl Check SMB Disk plugin for Nagios
 
 ";
-	print_usage();
-	print "
+    print_usage();
+    print "
 -H, --hostname=HOST
    NetBIOS name of the server
 -s, --share=STRING
@@ -391,5 +391,5 @@ Perl Check SMB Disk plugin for Nagios
    Warning (remaining) disk space should be greater than critical.
 
 ";
-	support();
+    support();
 }

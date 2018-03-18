@@ -1,5 +1,7 @@
 #!/bin/bash
 
-touch /var/log/php5-fpm.log
-chmod 666 /var/log/php5-fpm.log 
+touch /var/run/php/php5-fpm.sock
+chmod 777 /var/run/php/php5-fpm.sock
 
+touch /var/run/php/fcgiwrap.sock
+chmod 777 /var/run/php/fcgiwrap.sock

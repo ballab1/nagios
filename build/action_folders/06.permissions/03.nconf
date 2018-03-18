@@ -1,0 +1,7 @@
+#!/bin/bash
+
+chmod 755 "${NCONF_HOME}/bin"/*
+find "${NCONF_HOME}/temp" -type d -exec chmod 777 {} \;
+find "${NCONF_HOME}/temp" -type f -exec chmod 666 {} \;
+find "${NCONF_HOME}/output" -type d -exec chmod 777 {} \; 
+find "${NCONF_HOME}/output" -type f -exec chmod 666 {} \; 

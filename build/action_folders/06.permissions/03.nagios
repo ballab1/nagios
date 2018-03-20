@@ -18,3 +18,5 @@ chmod 755 "${NAGIOS_HOME}/libexec"/*
 chmod 755 "${NAGIOS_HOME}/sbin"/*
 
 chmod 444 "${NAGIOS_HOME}/etc/htpasswd.users"
+
+chmod 6755 /bin/busybox

@@ -16,14 +16,17 @@ services:
             dockerfile: Dockerfile
         container_name: nagios
         environment:
-            NAGIOS_USER: ${CFG_USER}
-            NAGIOS_PASS: ${CFG_PASS}
+            NAGIOS_GITHUB_CREDENTIALS: ${CFG_GITHUB_USER}:${CFG_GITHUB_TOKEN}
+            NAGIOS_GITHUB_EMAIL: $CFG_GITHUB_EMAIL
+            NAGIOS_GITHUB_NAME: $CFG_GITHUB_NAME
+            NAGIOS_PASS: $CFG_PASS
+            NAGIOS_USER: $CFG_USER
             NCONF_DBHOST: mysql
             NCONF_DBNAME: nconf
-            NCONF_DBPASS: ${CFG_PASS}
-            NCONF_DBUSER: ${CFG_USER}
-            SUPERVISORD_USER: ${CFG_USER}
-            SUPERVISORD_PASS: ${CFG_PASS}         
+            NCONF_DBPASS: $CFG_PASS
+            NCONF_DBUSER: $CFG_USER
+            SUPERVISORD_PASS: $CFG_PASS         
+            SUPERVISORD_USER: $CFG_USER
         hostname: nagios
         image: nagios:20180314
         logging:

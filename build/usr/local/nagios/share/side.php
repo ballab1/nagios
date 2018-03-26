@@ -27,9 +27,11 @@ $link_target = 'main';
         <ul class="navsectionlinks">
             <li><a href="main.php" target="<?php echo $link_target;?>">Home</a></li>
             <li><a href="https://go.nagios.com/nagioscore/docs" target="_blank">Documentation</a></li>
+            <li><a href="/nconf" target="<?php echo $link_target;?>">NCONF: configurator</a></li>
         </ul>
     </div>
 </div>
+
 
 <div class="navsection">
     <div class="navsectiontitle">Current Status</div>
@@ -78,10 +80,6 @@ $link_target = 'main';
             </fieldset>
         </form>
     </div>
-</div>
-
-<div class="navsection">
-    <div class="navsectiontitle" style="background-color: #f3d935;"><a href="/nconf" target="<?php echo $link_target;?>">NCONF</a></div>
 </div>
 
 <div class="navsection">

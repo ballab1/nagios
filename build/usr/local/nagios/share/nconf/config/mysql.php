@@ -6,9 +6,9 @@
 #
 # Main MySQL connection parameters
 #
-define('DBHOST', getenv('DBHOST'));
-define('DBNAME', getenv('DBNAME'));
-define('DBUSER', getenv('DBUSER'));
-define('DBPASS', getenv('DBPASS'));
+define('DBHOST', getenv('NCONF_DBHOST'));
+define('DBNAME', getenv('NCONF_DBNAME'));
+define('DBUSER', getenv('NCONF_DBUSER'));
+define('DBPASS', getenv('NCONF_DBPASS'));
 
 ?>

@@ -87,8 +87,8 @@ define('AD_USER_GROUP',         "CN=sysadmin");
 # Use external database (can be any mysql DB)
 # if you want to use the NConf DB, leave it commented
 #define('AUTH_DBHOST',       "mysql");
-#define('AUTH_DBNAME',       "NConf");
-#define('AUTH_DBUSER',       "bobb");
+#define('AUTH_DBNAME',       "nconf");
+#define('AUTH_DBUSER',       "user");
 #define('AUTH_DBPASS',       "*********");
 
 # Custom SQL query to run in the user database.

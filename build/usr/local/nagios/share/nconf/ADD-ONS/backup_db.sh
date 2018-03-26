@@ -7,11 +7,11 @@
 # 50 23 * * * /usr/local/nconf/ADD-ONS/backup_db.sh
 
 # MYSQL connection parameters (see config/mysql.php)
-DBHOST=mysql
+DBHOST=${NCONF_DBHOST}
 DBPORT=3306
-DBNAME=nconf
-DBUSER=bobb
-DBPASS=123Oleary
+DBNAME=${NCONF_DBNAME}
+DBUSER=${NCONF_DBUSER}
+DBPASS=${NCONF_DBPASS}
 
 # Other variables
 DESTINATION=/usr/local/nagios/etc/nconf/dbBACKUP

@@ -11,7 +11,7 @@ chown "${nagios['user']}":"${nagios['group']}" -R "${NAGIOS_HOME}/var"
 
 find "${WWW}" -type d -exec chmod 755 {} \;
 find "${WWW}" -type f -exec chmod 644 {} \;
-chown nobody:nobody -R "${WWW}"
+chown www-data:www-data -R "${WWW}"
 
 chmod 755 "${NAGIOS_HOME}/bin"/*
 chmod 755 "${NAGIOS_HOME}/libexec"/*

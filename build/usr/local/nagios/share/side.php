@@ -81,6 +81,10 @@ $link_target = 'main';
 </div>
 
 <div class="navsection">
+    <div class="navsectiontitle" style="background-color: #f3d935;"><a href="/nconf" target="<?php echo $link_target;?>">NCONF</a></div>
+</div>
+
+<div class="navsection">
     <div class="navsectiontitle">Reports</div>
     <div class="navsectionlinks">
         <ul class="navsectionlinks">

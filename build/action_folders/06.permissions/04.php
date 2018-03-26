@@ -1,4 +1,4 @@
 #!/bin/bash
 
-chown nobody:nobody -R "$SESSIONS_DIR"
-chown nobody:nobody -R "$RUN_DIR"
+chown www-data:www-data -R "$SESSIONS_DIR"
+chown www-data:www-data -R "$RUN_DIR"

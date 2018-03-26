@@ -1,4 +1,4 @@
-ARG FROM_BASE=base_container:20180314
+ARG FROM_BASE=supervisord:20180314
 FROM $FROM_BASE
 
 # name and version of this docker image
@@ -12,10 +12,8 @@ LABEL org_name=$CONTAINER_NAME \
 ARG DEBUG_TRACE=0
 
 
-ARG DBUSER="${CFG_MYSQL_USER}"
-ARG DBPASS="${CFG_MYSQL_PASSWORD}"
-ARG DBHOST='mysql'
-ARG DBNAME='nconf'
+ARG NCONF_DBHOST='mysql'
+ARG NCONF_DBNAME='nconf'
 
 ENV NAGIOS_HOME=/usr/local/nagios
 

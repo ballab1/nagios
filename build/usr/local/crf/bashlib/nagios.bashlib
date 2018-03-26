@@ -1,5 +1,17 @@
 #!/bin/sh
 
+function nagios.setupStuff()
+{
+    until [ -s /run/nagios.lock ] ; do
+        sleep 15
+        lib.primaryPid 'nagios' >  /run/nagios.lock 
+    done
+    until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ] ; do
+        sleep 15
+    done
+    find "${NAGIOS_HOME}/var" -type f -exec chmod 666 '{}' \;
+}
+
 function nagios.setPermissionsOnVolumes()
 {
     local www_user=${www_user:-"www-data"}
@@ -7,13 +19,14 @@ function nagios.setPermissionsOnVolumes()
     local nagios_user=${nagios_user:-"nagios"}
     local nagios_group=${nagios_group:-"nagios"}
 
+    adduser -D -H "${NAGIOS_USER}"
     nagios_user='nagios'
     nagios_group='nagios'
     chown "${nagios_user}:${nagios_group}" -R "${NAGIOS_HOME}/var/rrd"
     chown "${nagios_user}:${nagios_group}" -R "${NAGIOS_HOME}/var/archives"
 
-    www_user='nobody'
-    www_group='nobody'
+    www_user='www-data'
+    www_group='www-data'
     chown "${www_user}:${www_group}" -R "${NCONF_HOME}/output"
     chown "${www_user}:${www_group}" -R /var/log
     chmod 777 -R /var/log
@@ -21,12 +34,12 @@ function nagios.setPermissionsOnVolumes()
 
 function nagios.setHtPasswd
 {
-    sed -i "s|=nagiosadmin|=${DBUSER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
-    sed -i \
-        -e "s|^.*nagios_user=.*$|nagios_user=${DBUSER}|" \
-        -e "s|^.*nagios_group=.*$|nagios_group=${DBUSER}|" \
-           "${NAGIOS_HOME}/etc/nagios.cfg"
+    sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+#    sed -i \
+#        -e "s|^.*nagios_user=.*$|nagios_user=${NAGIOS_USER}|" \
+#        -e "s|^.*nagios_group=.*$|nagios_group=${NAGIOS_USER}|" \
+#           "${NAGIOS_HOME}/etc/nagios.cfg"
     rm "${NAGIOS_HOME}/etc/htpasswd.users"
-    echo "${DBPASS}" | htpasswd -c "${NAGIOS_HOME}/etc/htpasswd.users" "${DBUSER}"
+    echo "${NAGIOS_PASS}" | htpasswd -c "${NAGIOS_HOME}/etc/htpasswd.users" "${NAGIOS_USER}"
     chmod 444 "${NAGIOS_HOME}/etc/htpasswd.users"
 }

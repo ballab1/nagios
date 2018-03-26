@@ -67,21 +67,21 @@ sub dbConnect {
     }
 
 #    my $dbhost = &readNConfConfig(NC_CONFDIR."/mysql.php","DBHOST","scalar");
-    my $dbhost = $ENV{'DBHOST'};
+    my $dbhost = $ENV{'NCONF_DBHOST'};
 #    my $dbname = &readNConfConfig(NC_CONFDIR."/mysql.php","DBNAME","scalar");
-    my $dbname = $ENV{'DBNAME'};
+    my $dbname = $ENV{'NCONF_DBNAME'};
 #    my $dbuser = &readNConfConfig(NC_CONFDIR."/mysql.php","DBUSER","scalar");
-    my $dbuser = $ENV{'DBUSER'};
+    my $dbuser = $ENV{'NCONF_DBUSER'};
 #    my $dbpass = &readNConfConfig(NC_CONFDIR."/mysql.php","DBPASS","scalar");
-    my $dbpass = $ENV{'DBPASS'};
+    my $dbpass = $ENV{'NCONF_DBPASS'};
 
     &logger(4,"Connecting to database '$dbname' on host '$dbhost'");
     my $dsn = "DBI:mysql:database=$dbname;host=$dbhost";
 
-	# allow use of mysql socket connection rather than TCP connection only
-	if ($dbhost =~ /^:(.+)/) {
-		$dsn = "DBI:mysql:database=$dbname;mysql_socket=$1";
-	}
+  # allow use of mysql socket connection rather than TCP connection only
+  if ($dbhost =~ /^:(.+)/) {
+    $dsn = "DBI:mysql:database=$dbname;mysql_socket=$1";
+  }
 
     $NC_dbh = DBI->connect($dsn, $dbuser, $dbpass, { RaiseError => 1, AutoCommit => 1 }) or &logger(1,"Could not connect to database $dbname on $dbhost");
 

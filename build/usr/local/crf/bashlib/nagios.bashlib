@@ -83,6 +83,8 @@ function nagios.redeployConfig()
     tar -xzf "$outArchive" -C "${NAGIOS_HOME}/etc" 
     [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF_HOME}/temp/generate.lock"
     chown "${www_user}:${www_group}" -R "${NCONF_HOME}/temp"
+    find "${NCONF_HOME}/temp" -type d -exec chmod 775 '{}' \;
+    find "${NCONF_HOME}/temp" -type f -exec chmod 664 '{}' \;
 
     # verify config
     nagios -v "${NAGIOS_HOME}/etc/nagios.cfg"

@@ -1,6 +1,7 @@
-# nagios packages
+# nagios & rrd Packages
 
 if [ "${CBF['os_id']}" = 'alpine' ]; then
-    apk add --no-cache freetype gd git jpeg libpng mrtg mysql nagios-plugins-all
-    apk add --no-cache rrdtool rrdtool-cgi rrdtool-utils rsync
+    declare PKGS='git mrtg nagios-plugins-all rrdtool rrdtool-cgi rrdtool-utils rsync'
+    package.checkIfInstalled "$PKGS"
+    apk add --no-cache $PKGS
 fi

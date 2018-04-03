@@ -1,5 +1,7 @@
-# perl Packages
+# nagios perl Packages
 
 if [ "${CBF['os_id']}" = 'alpine' ]; then
-    apk add --no-cache openssl-dev perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd
+    declare PKGS='openssl-dev perl perl-cgi perl-cgi-session perl-plack perl-dbi perl-dbd-mysql perl-gd perl-rrd'
+    package.checkIfInstalled "$PKGS"
+    apk add --no-cache $PKGS
 fi

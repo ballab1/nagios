@@ -10,4 +10,5 @@ NCORE['home']="${NCORE_HOME:-/usr/local/nagios}"
 
 #directories
 export NAGIOS_HOME="${NCORE['home']}"
-export WWW="${NCORE['home']}/share"
+export WWW="${NAGIOS_HOME}/share"
+export WORKING_DIR="${WORKING_DIR:-$WWW}"

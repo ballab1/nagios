@@ -1,0 +1,10 @@
+# nagios & rrd Packages
+
+declare -a PKGS=( git
+                  mrtg
+                  nagios-plugins-all
+                  rrdtool
+                  rrdtool-cgi
+                  rrdtool-utils
+                  rsync )
+

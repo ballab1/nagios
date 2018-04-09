@@ -1,7 +1,0 @@
-# nagios core Packages
-
-if [ "${CBF['os_id']}" = 'alpine' ]; then
-    declare PKGS='curl findutils mysql-client openssh-client sudo thttpd ttf-dejavu unzip util-linux'
-    package.checkIfInstalled "$PKGS"
-    apk add --no-cache $PKGS
-fi

@@ -1,14 +1,9 @@
-# NagiosGraph
+#!/bin/bash
 
-declare -A NGRAPH=()
-
-NGRAPH['version']=${NGRAPH_VERSION:-1.5.2}
-NGRAPH['file']="/tmp/nagiosgraph-${NGRAPH['version']}.tar.gz"
-#NGRAPH['url']="https://downloads.sourceforge.net/nagiosgraph/nagiosgraph-${NGRAPH['version']}.tar.gz"
-NGRAPH['url']="http://sourceforge.mirrorservice.org/n/na/nagiosgraph/nagiosgraph/${NGRAPH['version']}/nagiosgraph-${NGRAPH['version']}.tar.gz"
-#NGRAPH['url']="https://sourceforge.net/projects/nagiosgraph/files/nagiosgraph/${NGRAPH['version']}/nagiosgraph-${NGRAPH['version']}.tar.gz/download"
-NGRAPH['sha256']="c466193233a4affbd32f882d8cb475ef2d1e9bf091a21fbf3fccd1f825d7450e"
-NGRAPH['home']="${NGRAPH_HOME:-/usr/local/nagiosgraph}"
-
-#directories
-export NGRAPH_HOME="${NGRAPH['home']}"
+declare -A NGRAPH=(
+    ['version']=${NGRAPH_VERSION:-1.5.2}
+    ['file']="/tmp/nagiosgraph-${NGRAPH['version']}.tar.gz"
+    ['url']="http://sourceforge.mirrorservice.org/n/na/nagiosgraph/nagiosgraph/${NGRAPH['version']}/nagiosgraph-${NGRAPH['version']}.tar.gz"
+    ['sha256']="c466193233a4affbd32f882d8cb475ef2d1e9bf091a21fbf3fccd1f825d7450e"
+    ['home']="${NGRAPH_HOME:-/usr/local/nagiosgraph}"
+)

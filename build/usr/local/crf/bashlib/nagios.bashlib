@@ -1,5 +1,20 @@
 #!/bin/sh
 
+#############################################################################
+function nagios.UID()
+{
+    lib.lookupId passwd nagios 1002
+}
+export -f nagios.UID
+
+#############################################################################
+function nagios.GID()
+{
+    lib.lookupId group nagios 1002
+}
+export -f nagios.GID 
+
+#############################################################################
 function nagios.deployLocal()
 {
     local -r NAGIOS_HOME=${NAGIOS_HOME:-/usr/local/nagios}
@@ -32,6 +47,7 @@ function nagios.deployLocal()
     fi
 }
 
+#############################################################################
 function nagios.gitUpdate()
 {
     local REPO_DIR=/tmp/config_source_data
@@ -54,6 +70,7 @@ function nagios.gitUpdate()
     fi
 }
 
+#############################################################################
 function nagios.redeployConfig()
 {
     local www_user=${www_user:-"www-data"}
@@ -93,6 +110,7 @@ function nagios.redeployConfig()
     ( nagios.setupStuff & )
 }
 
+#############################################################################
 function nagios.removeOldFiles()
 {
     # clean up any old content out on mounted volumes
@@ -104,6 +122,7 @@ function nagios.removeOldFiles()
     find "${NAGIOS_HOME}/var" ! -user nagios -delete
 }
 
+#############################################################################
 function nagios.setupStuff()
 {
     local nagios_user=${nagios_user:-"nagios"}
@@ -121,6 +140,7 @@ function nagios.setupStuff()
     echo 'Finished startup tasks'
 }
 
+#############################################################################
 function nagios.setPermissionsOnVolumes()
 {
     local www_user=${www_user:-"www-data"}
@@ -149,6 +169,7 @@ function nagios.setPermissionsOnVolumes()
     find "/var/log" -type f -exec chmod 666 '{}' \;
 }
 
+#############################################################################
 function nagios.setHtPasswd
 {
     sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"

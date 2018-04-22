@@ -13,6 +13,6 @@ declare -ar env_nagios=(
     'NGRAPH_HOME="${NGRAPH_HOME:-/usr/local/nagiosgraph}"'
 )
 
-lib.updateRuntimeEnvironment "${env_nagios[*]}" 
+crf.updateRuntimeEnvironment "${env_nagios[*]}" 
 
-lib.copyFileToRuntime 'LIB' 'nagios.bashlib'
+crf.copyFileToRuntime 'LIB' 'nagios.bashlib'

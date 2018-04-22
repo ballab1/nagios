@@ -1,3 +1,3 @@
 #!/bin/bash
 
-apk del .buildDepedencies 
+apk del .buildDependencies

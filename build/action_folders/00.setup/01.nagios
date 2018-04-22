@@ -1,0 +1,18 @@
+#!/bin/bash
+
+declare -ar env_nagios=(
+    'NAGIOS_USER=${NAGIOS_USER:-nagios}'
+    'NAGIOS_UID=${NAGIOS_UID:-1002}'
+    'NAGIOS_GROUP=${NAGIOS_GROUP:-nagios}'
+    'NAGIOS_GID=${NAGIOS_GID:-1002}'
+    'NAGIOS_HOME="${NAGIOS_HOME:-/usr/local/nagios}"'
+    'WWW="${NAGIOS_HOME}/share"'
+    'WORKING_DIR="${WORKING_DIR:-$WWW}"'
+    'NCONF_HOME="${NCONF_HOME:-${WWW}/nconf}"'
+    'NCONF=$NCONF_HOME'
+    'NGRAPH_HOME="${NGRAPH_HOME:-/usr/local/nagiosgraph}"'
+)
+
+lib.updateRuntimeEnvironment "${env_nagios[*]}" 
+
+lib.copyFileToRuntime 'LIB' 'nagios.bashlib'

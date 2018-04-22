@@ -1,7 +1,0 @@
-# nagios build Packages
-
-if [ "${CBF['os_id']}" = 'alpine' ]; then
-    declare PKGS='alpine-sdk bash-completion gd-dev gnutls-utils jpeg-dev libpng-dev libxml2-dev linux-headers rrdtool-dev'
-    package.checkIfInstalled "$PKGS"
-    apk add --no-cache  --virtual .buildDepedencies $PKGS
-fi

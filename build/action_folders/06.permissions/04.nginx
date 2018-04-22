@@ -1,4 +1,0 @@
-#!/bin/bash
-
-chown www-data:www-data -R /var/nginx/client_body_temp
-chown www-data:www-data -R /var/log

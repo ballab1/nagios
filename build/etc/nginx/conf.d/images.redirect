@@ -1,0 +1,5 @@
+
+location ~* .(gd2|jpg|jpeg|png|gif|ico|css|js)$ {
+    rewrite /images/logos/base/(.*)$ /images/logos/$1;
+    expires 365d;
+}

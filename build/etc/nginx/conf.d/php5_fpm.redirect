@@ -1,9 +1,4 @@
 
-location ~* .(gd2|jpg|jpeg|png|gif|ico|css|js)$ {
-    rewrite /images/logos/base/(.*)$ /images/logos/$1;
-    expires 365d;
-}
-
 # regex to split $uri to $fastcgi_script_name and $fastcgi_path
 #    fastcgi_split_path_info ^(.+\.php)(.*)$;
     # Check that the PHP script exists before passing it
@@ -24,24 +19,4 @@ location ~ \.php$ {
     fastcgi_pass php5_fpm;
     fastcgi_index index.php;
     include /etc/nginx/fastcgi.conf; 
-}
-
-location ~ \.cgi$ {
-    root /usr/local/nagios/sbin;
-    rewrite ^/nagios/cgi-bin/(.*)$ /$1;
-    rewrite ^/cgi-bin/(.*)$ /$1;
-    include /etc/nginx/fastcgi_params;
-
-    fastcgi_param AUTH_USER $remote_user;
-    fastcgi_param REMOTE_USER $remote_user;
-    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;
-    fastcgi_pass fcgiwrap;
-}
-
-location ~ /\. {
-    deny  all;
-}
-
-location ~ /(libraries|templates) {
-    deny all;
 }

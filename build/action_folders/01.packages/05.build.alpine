@@ -1,0 +1,12 @@
+# nagios build Packages
+
+declare -a OPTS=( '--virtual' '.buildDependencies' )
+declare -a PKGS=( alpine-sdk
+                  bash-completion
+                  gd-dev
+                  gnutls-utils
+                  jpeg-dev
+                  libpng-dev
+                  libxml2-dev
+                  linux-headers
+                  rrdtool-dev )

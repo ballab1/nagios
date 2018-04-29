@@ -1,0 +1,9 @@
+# nagios perl Packages
+
+declare -a PKGS=( perl-cgi
+                  perl-cgi-session
+                  perl-dbi
+                  perl-dbd-mysql
+                  perl-gd
+                  perl-plack
+                  perl-rrd )

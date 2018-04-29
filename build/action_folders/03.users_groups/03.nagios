@@ -1,0 +1,9 @@
+#!/bin/bash
+
+declare -A nagios=(
+    ['user']=${NAGIOS_USER:-nagios}
+    ['uid']=${NAGIOS_UID:-$(nagios.UID "$NAGIOS_USER")}
+    ['group']=${NAGIOS_GROUP:-nagios}
+    ['gid']=${NAGIOS_GID:-$(nagios.GID "$NAGIOS_GROUP")}
+    ['shell']=/bin/bash
+)

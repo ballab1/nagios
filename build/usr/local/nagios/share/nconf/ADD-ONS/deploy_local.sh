@@ -10,10 +10,10 @@ fi
 
 declare -r NAGIOS_HOME=${NAGIOS_HOME:-'/usr/local/nagios'}
 declare -r WWW=${WWW:-"${NAGIOS_HOME}/share"}
-declare -r NCONF=${NCONF:-"${WWW}/nconf"}
+declare -r NCONF_HOME=${NCONF_HOME:-"${WWW}/nconf"}
 
-declare -r OUTPUT_DIR="${NCONF}/output"
-declare -r TEMP_DIR="${NCONF}/temp"
+declare -r OUTPUT_DIR="${NCONF_HOME}/output"
+declare -r TEMP_DIR="${NCONF_HOME}/temp"
 declare -r CONF_ARCHIVE="NagiosConfig.tgz"
 
 declare -r outArchive="${OUTPUT_DIR}/${CONF_ARCHIVE}"

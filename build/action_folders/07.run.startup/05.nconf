@@ -1,0 +1,4 @@
+#!/bin/bash
+
+crf.fixupDirectory "$NCONF_HOME" "$WWW_UID"
+chmod a+x "$NCONF_HOME/bin"/*

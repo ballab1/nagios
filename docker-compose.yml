@@ -6,7 +6,6 @@ services:
             args:
                 CBF_VERSION: "${CBF_VERSION:-}"
                 CONTAINER_NAME: nagios
-                CONTAINER_VERSION: ${CONTAINER_VERSION:-3.0.0}
                 FROM_BASE: ${DOCKER_REGISTRY:-}php5:${CONTAINER_TAG:-latest}
             cache_from:
                 - ${DOCKER_REGISTRY:-}alpine:3.8
@@ -27,10 +26,18 @@ services:
             NCONF_DBNAME: nconf
             NCONF_DBPASS: $CFG_PASS
             NCONF_DBUSER: $CFG_USER
-            SUPERVISORD_PASS: $CFG_PASS         
+            SUPERVISORD_PASS: $CFG_PASS
             SUPERVISORD_USER: $CFG_USER
         hostname: nagios
         image: ${DOCKER_REGISTRY:-}nagios:${CONTAINER_TAG:-latest}
+        labels:
+            container.fingerprint: $CONTAINER_FINGERPRINT
+            container.git.branch: $CONTAINER_GIT_BRANCH
+            container.git.commit: $CONTAINER_GIT_COMMIT
+            container.git.url: $CONTAINER_GIT_URL
+            container.origin: $CONTAINER_ORIGIN
+            container.original.name: nagios
+            container.version: ${CONTAINER_VERSION:-3.0.0}
         logging:
             driver: json-file
             options:

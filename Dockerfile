@@ -19,6 +19,22 @@ ARG NCONF_DBNAME='nconf'
 
 ENV NAGIOS_HOME=/usr/local/nagios
 
+# nagios.core version being bundled in this docker image
+ARG NCORE_VERSION=${NCORE_VERSION:-4.3.4}
+LABEL nagios.core.version=$NCORE_VERSION  
+
+# nagios.object (cpan) version being bundled in this docker image
+ARG NOBJECT_VERSION=${NOBJECT_VERSION:-0.21.20}
+LABEL nagios.object.version=$NOBJECT_VERSION  
+
+# nconf version being bundled in this docker image
+ARG NCONF_VERSION=${NCONF_VERSION:-1.3.0-0}
+LABEL nconf.version=$NCONF_VERSION  
+
+# nagiosgraph being bundled in this docker image
+ARG NGRAPH_VERSION=${NGRAPH_VERSION:-1.5.2}
+LABEL nagiosgraph.version=$NGRAPH_VERSION  
+
 
 # build content
 RUN set -o verbose \

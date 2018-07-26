@@ -1,10 +1,11 @@
 #!/bin/bash
 
 declare -A NCONF=(
-    ['version']=${NCONF_VERSION:-1.3.0-0}
+    ['version']=${NCONF_VERSION:?}
     ['file']="/tmp/nconf-${NCONF['version']}.tgz"
 #    ['url']="https://downloads.sourceforge.net/nconf/nconf-${NCONF['version']}.tar.gz" 
     ['url']="https://sourceforge.net/projects/nconf/files/nconf/${NCONF['version']}/nconf-${NCONF['version']}.tgz/download"
-    ['sha256']="be83db273332595a0e1dffab504b3b3c5c6107c37fbd03c22390665d830b6d7b"
+    ['sha256_1.3.0-0']="be83db273332595a0e1dffab504b3b3c5c6107c37fbd03c22390665d830b6d7b"
+    ['sha256']="${NCONF['sha256_'${NCONF['version']}]}"
     ['home']="${NCONF_HOME:-${WWW}/nconf}"
 )

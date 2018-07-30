@@ -1,6 +1,10 @@
 #!/bin/bash
 
 declare -ar env_nagios=(
+    "NCORE_VERSION=${NCORE_VERSION:?}"
+    "NOBJECT_VERSION=${NOBJECT_VERSION:?}"
+    "NCONF_VERSION=${NCONF_VERSION:?}"
+    "NGRAPH_VERSION=${NGRAPH_VERSION:?}"
     'NAGIOS_USER=${NAGIOS_USER:-nagios}'
     'NAGIOS_UID=${NAGIOS_UID:-$(nagios.UID "$NAGIOS_USER")}'
     'NAGIOS_GROUP=${NAGIOS_GROUP:-nagios}'

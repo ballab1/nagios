@@ -22,7 +22,6 @@ services:
                 container.git.url: $CONTAINER_GIT_URL
                 container.origin: $CONTAINER_ORIGIN
                 container.original.name: nagios
-                container.version: ${CONTAINER_VERSION:-3.0.0}
         container_name: nagios
         environment:
             DEBUG_TRACE: ${DEBUG_TRACE:-0}

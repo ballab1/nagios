@@ -37,7 +37,7 @@ services:
             SUPERVISORD_PASS: $CFG_PASS
             SUPERVISORD_USER: $CFG_USER
         hostname: nagios
-        image: ${DOCKER_REGISTRY:-}nagios:${CONTAINER_TAG:-latest}
+        image: ${DOCKER_REGISTRY:-}nagios/4.3.4:${CONTAINER_TAG:-latest}
         logging:
             driver: json-file
             options:

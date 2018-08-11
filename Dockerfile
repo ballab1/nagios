@@ -16,8 +16,7 @@ ENV DEBUG_TRACE=0
 
 ARG NCONF_DBHOST='mysql'
 ARG NCONF_DBNAME='nconf'
-
-ENV NAGIOS_HOME=/usr/local/nagios
+ARG NAGIOS_HOME=/usr/local/nagios
 
 # nagios.core version being bundled in this docker image
 ARG NCORE_VERSION=4.3.4

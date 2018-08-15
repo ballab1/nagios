@@ -8,3 +8,5 @@ usermod -aG www-data nagios
 
 mkdir -p "${NAGIOS_HOME}/var/rw"
 touch "${NAGIOS_HOME}/var/objects.precache"
+
+rm "$(crf.STARTUP)/99.workdir.sh"

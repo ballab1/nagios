@@ -5,3 +5,7 @@ rm -rf /usr/local/include
 rm -rf /usr/local/nagios/include
 rm -rf /usr/local/nagios/share/docs
 rm -rf /usr/include
+rm "${NCONF_HOME}/CHANGELOG"
+rm "${NCONF_HOME}/COPYRIGHT"
+rm "${NCONF_HOME}/LICENSE"
+rm "${NCONF_HOME}/README"

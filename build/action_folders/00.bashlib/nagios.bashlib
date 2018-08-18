@@ -159,6 +159,7 @@ function nagios.setPermissions()
 
     chown "${NAGIOS_UID}:$WWW_GID" -R "${NAGIOS_HOME}/var/rw"
     chmod 755 "${NAGIOS_HOME}/sbin/"*.cgi
+    chmod 755 "${NAGIOS_HOME}/bin"/*
     chmod 755 "${NCONF_HOME}/bin"/*
 }
 export -f nagios.setPermissions

@@ -4,6 +4,11 @@
 : ${NAGIOS_UID:?"Environment variable 'NAGIOS_UID' not defined in '${BASH_SOURCE[0]}'"}
 
         
+if [ "${PWD_PROTECTED:-}" ]; then
+    : ${NAGIOS_PASS:?"Environment variable 'NAGIOS_PASS' not defined in '${BASH_SOURCE[0]}'"}
+    nginx.setHtPasswd "$(lib.getUserInfo "$NAGIOS_USER")" "$NAGIOS_PASS"
+fi
+
 declare __file=/etc/nginx/conf.d/fcgi.redirect
 term.log "    updating '${__file}' to use NAGIOS CGI scripts\n" 'white' 
 sed -Ei \
@@ -13,11 +18,11 @@ sed -Ei \
      -e 's|^\s*fastcgi_param\s+SCRIPT_FILENAME\s+.*$|    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;|' \
      "$__file"
 
+sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
 
 # nagios process needs set-uid so it can elevate its privelges        
 chmod 6755 /bin/busybox
 
-nagios.setHtPasswd
 nagios.setPermissions
 nagios.removeOldFiles
 nagios.redeployConfig

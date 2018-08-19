@@ -4,7 +4,6 @@ declare -a PKGS=( findutils
                   mysql-client
                   openssh-client
                   sudo
-                  thttpd
                   ttf-dejavu
                   unzip
                   util-linux )

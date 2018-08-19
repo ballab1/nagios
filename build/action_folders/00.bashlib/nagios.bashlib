@@ -159,25 +159,7 @@ function nagios.setPermissions()
 
     chown "${NAGIOS_UID}:$WWW_GID" -R "${NAGIOS_HOME}/var/rw"
     chmod 755 "${NAGIOS_HOME}/sbin/"*.cgi
+    chmod 755 "${NAGIOS_HOME}/bin"/*
     chmod 755 "${NCONF_HOME}/bin"/*
 }
 export -f nagios.setPermissions
-
-#############################################################################
-function nagios.setHtPasswd
-{
-    local __file=/etc/nginx/conf.d/default.listener
-    term.log "    updating '${__file}' to provide NAGIOS authentication\n" 'white' 
-
-    local __pwdfile="${NAGIOS_HOME}/etc/htpasswd.users"
-
-    cat << EOF >> "$__file"
-    auth_basic "Nagios Restricted Access";
-    auth_basic_user_file $__pwdfile;
-EOF
-    echo "${NAGIOS_PASS}" | htpasswd -c "$__pwdfile" "${NAGIOS_USER}"
-    [ ! -e "$__pwdfile" ] || chmod 444 "$__pwdfile"
-
-    sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
-}
-export -f nagios.setHtPasswd 

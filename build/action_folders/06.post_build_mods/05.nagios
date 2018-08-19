@@ -8,3 +8,7 @@ usermod -aG www-data nagios
 
 mkdir -p "${NAGIOS_HOME}/var/rw"
 touch "${NAGIOS_HOME}/var/objects.precache"
+
+[ -e "$(crf.STARTUP)/03.require_pwd" ]    && rm "$(crf.STARTUP)/03.require_pwd"
+[ -e "$(crf.STARTUP)/99.supervisord.sh" ] && rm "$(crf.STARTUP)/99.supervisord.sh"
+[ -e "$(crf.STARTUP)/99.workdir.sh" ]     && rm "$(crf.STARTUP)/99.workdir.sh"

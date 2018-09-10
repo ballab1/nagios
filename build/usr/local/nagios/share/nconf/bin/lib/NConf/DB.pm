@@ -67,13 +67,30 @@ sub dbConnect {
     }
 
 #    my $dbhost = &readNConfConfig(NC_CONFDIR."/mysql.php","DBHOST","scalar");
-    my $dbhost = $ENV{'NCONF_DBHOST'};
 #    my $dbname = &readNConfConfig(NC_CONFDIR."/mysql.php","DBNAME","scalar");
-    my $dbname = $ENV{'NCONF_DBNAME'};
 #    my $dbuser = &readNConfConfig(NC_CONFDIR."/mysql.php","DBUSER","scalar");
-    my $dbuser = $ENV{'NCONF_DBUSER'};
 #    my $dbpass = &readNConfConfig(NC_CONFDIR."/mysql.php","DBPASS","scalar");
+    my $dbhost = $ENV{'NCONF_DBHOST'};
+    my $dbname = $ENV{'NCONF_DBNAME'};
+    my $dbuser = $ENV{'NCONF_DBUSER'};
     my $dbpass = $ENV{'NCONF_DBPASS'};
+    if (! defined $dbpass) {
+        my $conf_file = $ENV{'NCONF_DBPASS_FILE'};
+        if (! defined $conf_file) {
+            &logger(4,"No password defined for database");
+        }
+        else {
+            &logger(4,"Reading option NCONF_DBPASS from $conf_file");
+            if (! open(CONF,$conf_file)) {
+                &logger(1,"Could not open configuration file $conf_file");
+            }
+            else {
+                $dbpass = <CONF>;
+                close(CONF);
+                chomp $dbpass;
+            }
+        }
+    }
 
     &logger(4,"Connecting to database '$dbname' on host '$dbhost'");
     my $dsn = "DBI:mysql:database=$dbname;host=$dbhost";

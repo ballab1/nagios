@@ -5,7 +5,7 @@ function nagios.UID()
 {
     local -r user_name="${1:-nagios}"
     local -r default_uid=${2:-1002}
-    
+
     lib.lookupId "$user_name" 'passwd' "$default_uid"
 }
 export -f nagios.UID
@@ -15,10 +15,10 @@ function nagios.GID()
 {
     local -r group_name="${1:-nagios}"
     local -r default_gid=${2:-1002}
-    
+
     lib.lookupId "$group_name" 'group' "$default_gid"
 }
-export -f nagios.GID 
+export -f nagios.GID
 
 #############################################################################
 function nagios.deployLocal()
@@ -55,41 +55,47 @@ function nagios.deployLocal()
         supervisorctl restart nagios
     fi
 }
-export -f nagios.deployLocal 
+export -f nagios.deployLocal
 
 #############################################################################
 function nagios.gitUpdate()
 {
     local REPO_DIR=/tmp/config_source_data
     cd "${REPO_DIR}"
+    [ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
+    [ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
+    [ "${NAGIOS_GITHUB_CREDENTIALS:-}" ] || lib.file_env 'NAGIOS_GITHUB_CREDENTIALS'
 
 
-    # backup latest changes to DBMS 
+    # backup latest changes to DBMS
     "${NCONF_HOME}/bin/dump_nagios_data.pl"
 
-    
+
     # check the 'git status' to see if there are any changes  (return SUCCESS on 0-changes)
     local -i numberOfChanges=$(git status --porcelain | grep -c '^ M ')
-    echo "number of Changes:      ${numberOfChanges}" 
+    echo "number of Changes:      ${numberOfChanges}"
     if [[ $numberOfChanges -gt 0 ]]; then
         # update our git repo with changes
         git checkout -b "${NAGIOS_BRANCH:-operational/updates/nagios}"
         git add -A
-        git commit -m "$(date +"%Y-%m-%d %H:%M:%S") - new backup files" 
+        git commit -m "$(date +"%Y-%m-%d %H:%M:%S") - new backup files"
         git push -v
     fi
 }
-export -f nagios.gitUpdate 
+export -f nagios.gitUpdate
 
 #############################################################################
 function nagios.redeployConfig()
 {
     local REPO_DIR=/tmp/config_source_data
     [ ! -e "${REPO_DIR}" ] || rm -rf "${REPO_DIR}"
+    [ "${NAGIOS_GITHUB_CREDENTIALS:-}" ] || lib.file_env 'NAGIOS_GITHUB_CREDENTIALS'
     git clone -v --recursive "https://${NAGIOS_GITHUB_CREDENTIALS}@${NAGIOS_REPO}.git" "${REPO_DIR}"
     chown "${WWW_UID}:$WWW_GID" -R "${REPO_DIR}"
     cd "${REPO_DIR}"
 
+    [ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
+    [ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
 
     # load mysql with new config
     "${NCONF_HOME}/bin/load_nagios_data.pl"
@@ -104,7 +110,7 @@ function nagios.redeployConfig()
     rm -rf "${NAGIOS_HOME}/etc/Default_collector"
     rm -rf "${NAGIOS_HOME}/etc/global"
     echo 'adding new config'
-    tar -xzf "$outArchive" -C "${NAGIOS_HOME}/etc" 
+    tar -xzf "$outArchive" -C "${NAGIOS_HOME}/etc"
     [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF_HOME}/temp/generate.lock"
 
     crf.fixupDirectory "$NCONF_HOME/temp" "$( www.UID )"
@@ -116,7 +122,7 @@ function nagios.redeployConfig()
     # run remainder in a backgroud process
     ( nagios.setupStuff & )
 }
-export -f nagios.redeployConfig 
+export -f nagios.redeployConfig
 
 #############################################################################
 function nagios.removeOldFiles()
@@ -129,14 +135,14 @@ function nagios.removeOldFiles()
     [ ! -e "$tmpArchive" ] || rm "$tmpArchive"
     find "${NAGIOS_HOME}/var" ! -user nagios -delete
 }
-export -f nagios.removeOldFiles 
+export -f nagios.removeOldFiles
 
 #############################################################################
 function nagios.setupStuff()
 {
     until [ -s /run/nagios.lock ] ; do
         sleep 15
-        lib.primaryPid 'nagios' >  /run/nagios.lock 
+        lib.primaryPid 'nagios' >  /run/nagios.lock
     done
     until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ] ; do
         sleep 15
@@ -145,7 +151,7 @@ function nagios.setupStuff()
     chmod 666 "${NAGIOS_HOME}/var/rw/nagios.cmd"
     echo 'Finished startup tasks'
 }
-export -f nagios.setupStuff 
+export -f nagios.setupStuff
 
 #############################################################################
 function nagios.setPermissions()

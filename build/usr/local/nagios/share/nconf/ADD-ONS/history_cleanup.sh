@@ -4,8 +4,8 @@
 # NCONF database settings:
 USER="nconf"
 DBNAME="NConf"
-# enter password here, if your security allows it
-#PASSWORD="xxxyyy"
+[ ${NCONF_DBPASS:-} ] || lib.file_env 'NCONF_DBPASS'
+DBPASS=${NCONF_DBPASS}
 
 # delete history entries older than
 # UNIT should be one of these : SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, or YEAR
@@ -30,6 +30,6 @@ DELETE_QUERY="DELETE FROM History WHERE timestamp < TIMESTAMPADD("${UNIT}",-"${I
 #echo 'mysql -u '${USER}' -p '${DBNAME}' -e "'${DELETE_QUERY}'"'
 
 # executes query:
-mysql -u ${USER} -p${PASSWORD} ${DBNAME} -e "${DELETE_QUERY}"
+mysql -u ${USER} -p${DBPASS} ${DBNAME} -e "${DELETE_QUERY}"
 
 exit

@@ -5,9 +5,11 @@
 
         
 if [ "${PWD_PROTECTED:-}" ]; then
+    [ "${NAGIOS_PASS:-}" ] || lib.file_env 'NAGIOS_PASS'
     : ${NAGIOS_PASS:?"Environment variable 'NAGIOS_PASS' not defined in '${BASH_SOURCE[0]}'"}
     nginx.setHtPasswd "$(lib.getUserInfo "$NAGIOS_USER")" "$NAGIOS_PASS"
 fi
+
 
 declare __file=/etc/nginx/conf.d/fcgi.redirect
 term.log "    updating '${__file}' to use NAGIOS CGI scripts\n" 'white' 
@@ -19,6 +21,11 @@ sed -Ei \
      "$__file"
 
 sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+
+mkdir -p /etc/nagios/Default_collector
+mkdir -p /etc/nagios/global
+chown nagios:nagios -R /etc/nagios
+
 
 # nagios process needs set-uid so it can elevate its privelges        
 chmod 6755 /bin/busybox

@@ -19,7 +19,7 @@ ARG NCONF_DBNAME='nconf'
 ARG NAGIOS_HOME=/usr/local/nagios
 
 # nagios.core version being bundled in this docker image
-ARG NCORE_VERSION=4.3.4
+ARG NCORE_VERSION=4.4.2
 LABEL nagios.core.version=$NCORE_VERSION  
 
 # nagios.object (cpan) version being bundled in this docker image

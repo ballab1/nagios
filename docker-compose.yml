@@ -41,7 +41,7 @@ services:
 #            WEB_USER_ID: $CFG_USER
 #            WEB_USER_PASS_FILE: /run/secrets/web_user.pwd
         hostname: nagios
-        image: ${DOCKER_REGISTRY:-}${OS:-}nagios/4.3.4:${CONTAINER_TAG:-latest}
+        image: ${DOCKER_REGISTRY:-}${OS:-}nagios/4.4.2:${CONTAINER_TAG:-latest}
         logging:
             driver: json-file
             options:

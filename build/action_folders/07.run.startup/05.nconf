@@ -1,0 +1,14 @@
+#!/bin/bash
+
+crf.fixupDirectory "$NCONF_HOME" "$WWW_UID"
+chmod a+x "$NCONF_HOME/bin"/*
+
+if [ "${NCONF_DBPASS_FILE:-}" ]; then
+    cat << EOT > "$NCONF_HOME/config/mysql.password.inc.php"
+<?php
+define('DBPASS', '$(< "$NCONF_DBPASS_FILE")');
+?>
+EOT
+else
+   : ${NCONF_DBPASS:?"Environment variable 'NCONF_DBPASS' not defined in '${BASH_SOURCE[0]}'"}
+fi

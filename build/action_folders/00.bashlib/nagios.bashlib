@@ -1,0 +1,173 @@
+#!/bin/bash
+#############################################################################
+
+function nagios.UID()
+{
+    local -r user_name="${1:-nagios}"
+    local -r default_uid=${2:-1002}
+
+    lib.lookupId "$user_name" 'passwd' "$default_uid"
+}
+export -f nagios.UID
+
+#############################################################################
+function nagios.GID()
+{
+    local -r group_name="${1:-nagios}"
+    local -r default_gid=${2:-1002}
+
+    lib.lookupId "$group_name" 'group' "$default_gid"
+}
+export -f nagios.GID
+
+#############################################################################
+function nagios.deployLocal()
+{
+    local -r NAGIOS_HOME=${NAGIOS_HOME:-/usr/local/nagios}
+    local -r WWW="${WWW:-${NAGIOS_HOME}/share}"
+    local -r NCONF_HOME="${NCONF_HOME:-${WWW}/nconf}"
+
+    local -r TEMP_DIR="${NCONF_HOME}/temp"
+    [ -e "${TEMP_DIR}" ] || mkdir -p "${TEMP_DIR}"
+    local -r tmpArchive="${TEMP_DIR}/NagiosConfig.tgz"
+
+    local -r OUTPUT_DIR="${NCONF_HOME}/output"
+    local -r outArchive="${OUTPUT_DIR}/NagiosConfig.tgz"
+
+    # update nagios config if CONF_ARCHIVE is newer than
+    [ ! -e "$outArchive" ] || [ "$outArchive" -nt "$tmpArchive" ] || cp "$outArchive" "$tmpArchive"
+    if [ ! -e "$tmpArchive" ]; then
+        term.log "No configuration file archive (NagiosConfig.tgz) found.\n" 'yellow'
+        return
+    fi
+
+    # re-deploy: 'extract' into /usr/local/nagios/etc & 'reload' nagios
+    echo 'removing old config'
+    rm -rf "${NAGIOS_HOME}/etc/Default_collector"
+    rm -rf "${NAGIOS_HOME}/etc/global"
+    echo 'deploying new config'
+    tar -xzf "$tmpArchive" -C "${NAGIOS_HOME}/etc"
+
+    nagios.gitUpdate
+
+    if [ -e /run/nagios.lock ]; then
+        echo "restarting 'nagios' service"
+        supervisorctl restart nagios
+    fi
+}
+export -f nagios.deployLocal
+
+#############################################################################
+function nagios.gitUpdate()
+{
+    local repo_dir=/tmp/config_source_data
+    cd "${repo_dir}"
+    [ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
+    [ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
+    [ "${NAGIOS_GITHUB_CREDENTIALS:-}" ] || lib.file_env 'NAGIOS_GITHUB_CREDENTIALS'
+
+
+    # backup latest changes to DBMS
+    "${NCONF_HOME}/bin/dump_nagios_data.pl"
+
+
+    # check the 'git status' to see if there are any changes  (return SUCCESS on 0-changes)
+    local -i numberOfChanges=$(git status --porcelain | grep -c '^ M ')
+    echo "number of Changes:      ${numberOfChanges}"
+    if [[ $numberOfChanges -gt 0 ]]; then
+        # update our git repo with changes
+        git checkout -b "${NAGIOS_BRANCH:-operational/updates/nagios}"
+        git add -A
+        git commit -m "$(date +"%Y-%m-%d %H:%M:%S") - new backup files"
+        git push -v
+    fi
+}
+export -f nagios.gitUpdate
+
+#############################################################################
+function nagios.redeployConfig()
+{
+    [ "${NAGIOS_REPO:-}" ] || return 0
+
+    local repo_dir=/tmp/config_source_data
+    [ ! -e "${repo_dir}" ] || rm -rf "${repo_dir}"
+    [ "${NAGIOS_GITHUB_CREDENTIALS:-}" ] || lib.file_env 'NAGIOS_GITHUB_CREDENTIALS'
+    git clone -v --recursive "https://${NAGIOS_GITHUB_CREDENTIALS}@${NAGIOS_REPO}.git" "${repo_dir}"
+    chown "${WWW_UID}:$WWW_GID" -R "${repo_dir}"
+    cd "${repo_dir}"
+
+    [ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
+    [ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
+
+    # load mysql with new config
+    "${NCONF_HOME}/bin/load_nagios_data.pl"
+
+    # generate new config from mysql
+    "${NCONF_HOME}/bin/generate_config.pl"
+
+
+    # re-deploy: 'extract' into /usr/local/nagios/etc & 'reload' nagios
+    declare -r outArchive="${NCONF_HOME}/output/NagiosConfig.tgz"
+    echo 'removing old config'
+    rm -rf "${NAGIOS_HOME}/etc/Default_collector"
+    rm -rf "${NAGIOS_HOME}/etc/global"
+    echo 'adding new config'
+    tar -xzf "$outArchive" -C "${NAGIOS_HOME}/etc"
+    [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF_HOME}/temp/generate.lock"
+
+    crf.fixupDirectory "$NCONF_HOME/temp" "$( www.UID )"
+    chown "${WWW_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
+
+    # verify config
+    nagios -v "${NAGIOS_HOME}/etc/nagios.cfg"
+
+    # run remainder in a backgroud process
+    ( nagios.setupStuff & )
+}
+export -f nagios.redeployConfig
+
+#############################################################################
+function nagios.removeOldFiles()
+{
+    # clean up any old content out on mounted volumes
+    [ ! -e /run/nagios.lock ] || rm /run/nagios.lock
+    declare -r TEMP_DIR="${NCONF_HOME}/temp"
+    [ -e "${TEMP_DIR}" ] || mkdir -p "${TEMP_DIR}"
+    declare -r tmpArchive="${TEMP_DIR}/NagiosConfig.tgz"
+    [ ! -e "$tmpArchive" ] || rm "$tmpArchive"
+    find "${NAGIOS_HOME}/var" ! -user nagios -delete
+}
+export -f nagios.removeOldFiles
+
+#############################################################################
+function nagios.setupStuff()
+{
+    until [ -s /run/nagios.lock ] ; do
+        sleep 15
+        lib.primaryPid 'nagios' >  /run/nagios.lock
+    done
+    until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ] ; do
+        sleep 15
+    done
+    chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
+    chmod a+rw "${NAGIOS_HOME}/var/rw/nagios.cmd"
+    echo 'Finished startup tasks'
+}
+export -f nagios.setupStuff
+
+#############################################################################
+function nagios.setPermissions()
+{
+    crf.fixupDirectory "$NAGIOS_HOME" "$NAGIOS_UID"
+#    crf.fixupDirectory "${NAGIOS_HOME}/etc" "$NAGIOS_UID"
+#    crf.fixupDirectory "${NAGIOS_HOME}/sbin" "$NAGIOS_UID"
+#    crf.fixupDirectory "${NAGIOS_HOME}/var" "$NAGIOS_UID"
+    [ "$NAGIOS_HOME/share" = "$WWW" ] || crf.fixupDirectory "$NAGIOS_HOME/share" "$WWW_UID"
+    [ "$NCONF_HOME" = "$WWW" ] || crf.fixupDirectory "$NCONF_HOME" "$WWW_UID"
+
+    chown "${NAGIOS_UID}:$WWW_GID" -R "${NAGIOS_HOME}/var/rw"
+    chmod a+rx,u+w "${NAGIOS_HOME}/sbin/"*.cgi
+    chmod a+rx,u+w "${NAGIOS_HOME}/bin"/*
+    chmod a+rx,u+w "${NCONF_HOME}/bin"/*
+}
+export -f nagios.setPermissions

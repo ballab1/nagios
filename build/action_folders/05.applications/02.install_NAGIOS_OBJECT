@@ -1,0 +1,5 @@
+#!/bin/bash
+
+tar xf "${NOBJECT['file']}"
+cd "Nagios-Object-${NOBJECT['version']}"
+mv lib/Nagios /usr/local/lib/perl5/site_perl/

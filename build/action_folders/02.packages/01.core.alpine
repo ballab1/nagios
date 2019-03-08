@@ -1,0 +1,9 @@
+# nagios core Packages
+
+declare -a PKGS=( findutils
+                  mysql-client
+                  openssh-client
+                  sudo
+                  ttf-dejavu
+                  unzip
+                  util-linux )

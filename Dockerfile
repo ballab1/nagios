@@ -1,23 +1,38 @@
-FROM alpine:3.4
-    
-ARG TZ=UTC
+ARG FROM_BASE=${DOCKER_REGISTRY:-}php5:${CONTAINER_TAG:-latest}
+FROM $FROM_BASE
 
-ENV VERSION=0.4 \
-    BUILDTIME_PKGS="alpine-sdk curl busybox bash rsync perl gd zlib libpng jpeg freetype mysql perl-plack findutils" \
-    RUNTIME_PKGS="nagios nagios-plugins nagios-web nagiosql bash" \
-    USER=nagios
+# name and version of this docker image
+ARG CONTAINER_NAME=nagios
+# Specify CBF version to use with our configuration and customizations
+ARG CBF_VERSION="${CBF_VERSION}"
 
-ADD docker-entrypoint.sh /
+# include our project files
+COPY build Dockerfile /tmp/
 
-# Run-time Dependencies
-RUN apk upgrade --update
+# set to non zero for the framework to show verbose action scripts
+#    (0:default, 1:trace & do not cleanup; 2:continue after errors)
+ENV DEBUG_TRACE=0
 
-# Run-time dependencies
-RUN apk add --no-cache $RUNTIME_PKGS && \
-    apk add tzdata && cp /usr/share/zoneinfo/$TZ /etc/timezone && apk del tzdata && \
-    chmod u+rx,g+rx,o+rx,a-w /docker-entrypoint.sh
-#RUN usermod -u 10777 $USER && \
-#    groupmod -g 10777 $USER
 
-#USER $USER
-CMD /docker-entrypoint.sh
+ARG NCONF_DBHOST='mysql'
+ARG NCONF_DBNAME='nconf'
+
+ENV NAGIOS_HOME=/usr/local/nagios
+
+
+# build content
+RUN set -o verbose \
+    && chmod u+rwx /tmp/build.sh \
+    && /tmp/build.sh "$CONTAINER_NAME" "$DEBUG_TRACE"
+RUN [ $DEBUG_TRACE != 0 ] || rm -rf /tmp/* 
+
+
+# We expose nagios on ports 80,25
+EXPOSE 25
+
+#USER nagios
+WORKDIR $NAGIOS_HOME
+
+ENTRYPOINT [ "docker-entrypoint.sh" ]
+#CMD ["$CONTAINER_NAME"]
+CMD ["nagios"]

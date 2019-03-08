@@ -1,0 +1,10 @@
+#!/bin/bash
+
+declare -A NGRAPH=(
+    ['version']=${NGRAPH_VERSION:-1.5.2}
+    ['file']="/tmp/nagiosgraph-${NGRAPH['version']}.tar.gz"
+#    ['url']="http://sourceforge.mirrorservice.org/n/na/nagiosgraph/nagiosgraph/${NGRAPH['version']}/nagiosgraph-${NGRAPH['version']}.tar.gz"
+    ['url']="https://sourceforge.net/projects/nagiosgraph/files/nagiosgraph/${NGRAPH['version']}/nagiosgraph-${NGRAPH['version']}.tar.gz/download"
+    ['sha256']="c466193233a4affbd32f882d8cb475ef2d1e9bf091a21fbf3fccd1f825d7450e"
+    ['home']="${NGRAPH_HOME:-/usr/local/nagiosgraph}"
+)

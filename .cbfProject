@@ -1,0 +1,3 @@
+[project]
+container_name=nagios_container
+friendly_name=nagios

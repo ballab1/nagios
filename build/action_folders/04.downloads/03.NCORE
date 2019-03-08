@@ -1,0 +1,9 @@
+#!/bin/bash
+
+declare -A NCORE=(
+    ['version']=${NCORE_VERSION:-4.3.4}
+    ['file']="/tmp/nagios-${NCORE['version']}.tar.gz"
+    ['url']="https://assets.nagios.com/downloads/nagioscore/releases/nagios-${NCORE['version']}.tar.gz"
+    ['sha256']="c90b7812d9e343db12be19a572e15c415c5d6353a91c5e226e432c2d4aaa44f1"
+    ['home']="${NCORE_HOME:-/usr/local/nagios}"
+)

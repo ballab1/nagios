@@ -1,0 +1,10 @@
+#!/bin/bash
+ 
+# enable root access in our container for webuser
+echo "nagios ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+echo "www-data ALL=(ALL) NOPASSWD: /usr/local/nagios/bin/deploy_local.sh" >> /etc/sudoers
+
+usermod -aG www-data nagios
+
+mkdir -p "${NAGIOS_HOME}/var/rw"
+touch "${NAGIOS_HOME}/var/objects.precache"

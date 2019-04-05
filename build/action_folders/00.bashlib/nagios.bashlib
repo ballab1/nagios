@@ -43,8 +43,8 @@ function nagios.deployLocal()
 
     # re-deploy: 'extract' into /usr/local/nagios/etc & 'reload' nagios
     echo 'removing old config'
-    rm -rf "${NAGIOS_HOME}/etc/Default_collector"
-    rm -rf "${NAGIOS_HOME}/etc/global"
+    rm -rf "${NAGIOS_HOME}/etc/Default_collector"/*
+    rm -rf "${NAGIOS_HOME}/etc/global"/*
     echo 'deploying new config'
     tar -xzf "$tmpArchive" -C "${NAGIOS_HOME}/etc"
 

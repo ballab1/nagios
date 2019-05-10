@@ -61,7 +61,9 @@ export -f nagios.deployLocal
 function nagios.gitUpdate()
 {
     local repo_dir=/tmp/config_source_data
-    cd "${repo_dir}"
+    mkdir -p "$repo_dir" ||:
+    cd "$repo_dir"
+
     [ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
     [ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
     [ "${NAGIOS_GITHUB_CREDENTIALS:-}" ] || lib.file_env 'NAGIOS_GITHUB_CREDENTIALS'

@@ -42,6 +42,7 @@ services:
             NAGIOS_GITHUB_EMAIL: $CFG_GITHUB_EMAIL
             NAGIOS_GITHUB_NAME: $CFG_GITHUB_NAME
             NAGIOS_PASS_FILE: /run/secrets/nagios.pwd
+            NAGIOS_URL_HTML_PATH: /nagios
             NAGIOS_USER: $CFG_USER
             NCONF_DBHOST: mysql
             NCONF_DBNAME: nconf
@@ -52,6 +53,9 @@ services:
             SUPERVISORD_USER: $CFG_USER
 #            WEB_USER_ID: $CFG_USER
 #            WEB_USER_PASS_FILE: /run/secrets/web_user.pwd
+# add hosts file entry
+        extra_hosts:
+            - \"docker-host:${HOST_IP:?}\"
         hostname: nagios
         image: ${DOCKER_REGISTRY:-ubuntu-s2:5000/}${CONTAINER_OS:-alpine}/nagios/${NCORE_VERSION:-4.4.2}:${CONTAINER_TAG:-latest}
 # deploy arguments, not needed for building

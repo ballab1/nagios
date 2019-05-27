@@ -95,12 +95,23 @@ sub dbConnect {
     &logger(4,"Connecting to database '$dbname' on host '$dbhost'");
     my $dsn = "DBI:mysql:database=$dbname;host=$dbhost";
 
-  # allow use of mysql socket connection rather than TCP connection only
-  if ($dbhost =~ /^:(.+)/) {
-    $dsn = "DBI:mysql:database=$dbname;mysql_socket=$1";
-  }
+    # allow use of mysql socket connection rather than TCP connection only
+    if ($dbhost =~ /^:(.+)/) {
+      $dsn = "DBI:mysql:database=$dbname;mysql_socket=$1";
+    }
 
-    $NC_dbh = DBI->connect($dsn, $dbuser, $dbpass, { RaiseError => 1, AutoCommit => 1 }) or &logger(1,"Could not connect to database $dbname on $dbhost");
+    my $retries = 3;
+    until ( $NC_dbh = DBI->connect($dsn, $dbuser, $dbpass, { PrintError => 1, RaiseError => 0, AutoCommit => 1 }) ) {
+        if (--$retries == 0) {
+            &logger(1,"Could not connect to database $dbname on $dbhost");
+            return $NC_dbh;
+        }
+        &logger(1,"waiting for database: $dbname");
+        sleep 2
+    }
+    $NC_dbh->{PrintError} = 1;
+    $NC_dbh->{RaiseError} = 1;
+    $NC_dbh->{AutoCommit} = 1;
 
     return $NC_dbh;
 }

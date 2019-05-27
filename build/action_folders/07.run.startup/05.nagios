@@ -11,6 +11,7 @@ if [ "${PWD_PROTECTED:-}" ]; then
 fi
 
 
+# update fcgi config for nagios
 declare __file=/etc/nginx/conf.d/fcgi.redirect
 term.log "    updating '${__file}' to use NAGIOS CGI scripts\n" 'white' 
 sed -Ei \
@@ -20,19 +21,47 @@ sed -Ei \
      -e 's|^\s*fastcgi_param\s+SCRIPT_FILENAME\s+.*$|    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;|' \
      "$__file"
 
+
+# update cgi config for admin user and url_html_path
 sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+if [ "${NAGIOS_URL_HTML_PATH:-}" ]; then
+    [[ "$NAGIOS_URL_HTML_PATH" != */ ]] && NAGIOS_URL_HTML_PATH="${NAGIOS_URL_HTML_PATH}/"
+    term.log "    Updating '${NAGIOS_HOME}/etc/cfg.cgi' - url_html_path=$NAGIOS_URL_HTML_PATH"'\n' 'white'
+    sed -Ei -e "s|^(url_html_path=).*$|\1${NAGIOS_URL_HTML_PATH}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    sed -Ei -e "s|^(.cfg\['cgi_base_url'\]=).*$|\1'${NAGIOS_URL_HTML_PATH}cgi-bin';|" "${NAGIOS_HOME}/share/config.inc.php"
+fi
 
-mkdir -p /etc/nagios/Default_collector
-mkdir -p /etc/nagios/global
-chown nagios:nagios -R /etc/nagios
 
-
-# nagios process needs set-uid so it can elevate its privelges        
-chmod 6755 /bin/busybox
-
+# setup file permissions prior to loading our config
 nagios.setPermissions
-nagios.removeOldFiles
-nagios.redeployConfig
 
 
-/usr/local/nagios/bin/nagios --verify-config /usr/local/nagios/etc/nagios.cfg ||:
+# read Nagios config from GIT if "NAGIOS_REPO" has been specified
+declare -r repo_dir=/tmp/config_source_data
+nagios.gitClone "$repo_dir"
+cd "$repo_dir"
+
+
+# convert password secrets
+[ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
+[ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
+
+
+# load mysql with config
+"${NCONF_HOME}/bin/load_nagios_data.pl"
+
+
+# generate new NagiosConfig.tgz from mysql DB
+"${NCONF_HOME}/bin/generate_config.pl"
+
+
+# 'extract' NagiosConfig.tgz into /usr/local/nagios/etc
+nagios.deployNagiosConfig
+
+
+# show configuration verification
+nagios  --verify-config "${NAGIOS_HOME}/etc/nagios.cfg"
+
+
+# run remainder in a background process
+nohup nagios.finishStartup &

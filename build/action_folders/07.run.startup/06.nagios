@@ -3,11 +3,13 @@
 : ${WWW_UID:?"Environment variable 'WWW_UID' not defined in '${BASH_SOURCE[0]}'"}
 : ${NAGIOS_UID:?"Environment variable 'NAGIOS_UID' not defined in '${BASH_SOURCE[0]}'"}
 
-        
-if [ "${PWD_PROTECTED:-}" ]; then
+if [ "${PWD_PROTECTED:-}" ] && [ "${NAGIOS_USER:-}" ]; then
     [ "${NAGIOS_PASS:-}" ] || lib.file_env 'NAGIOS_PASS'
     : ${NAGIOS_PASS:?"Environment variable 'NAGIOS_PASS' not defined in '${BASH_SOURCE[0]}'"}
-    nginx.setHtPasswd "$(lib.getUserInfo "$NAGIOS_USER")" "$NAGIOS_PASS"
+    nginx.setHtPasswd "$NAGIOS_USER" "$NAGIOS_PASS"
+
+    # update cgi config for admin user
+    sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
 fi
 
 
@@ -16,19 +18,23 @@ declare __file=/etc/nginx/conf.d/fcgi.redirect
 term.log "    updating '${__file}' to use NAGIOS CGI scripts\n" 'white' 
 sed -Ei \
      -e 's|^\s*root.*$|    root /usr/local/nagios/sbin;|' \
-     -e 's|^\srewrite\s+.*$|    rewrite ^/nagios/cgi-bin/(.*)$ /$1;|' \
-     -e '/include/ i\    rewrite ^/nagios/cgi-bin/(.*)$ /$1;' \
      -e 's|^\s*fastcgi_param\s+SCRIPT_FILENAME\s+.*$|    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;|' \
      "$__file"
 
 
-# update cgi config for admin user and url_html_path
-sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+# update config for url_html_path
 if [ "${NAGIOS_URL_HTML_PATH:-}" ]; then
     [[ "$NAGIOS_URL_HTML_PATH" != */ ]] && NAGIOS_URL_HTML_PATH="${NAGIOS_URL_HTML_PATH}/"
-    term.log "    Updating '${NAGIOS_HOME}/etc/cfg.cgi' - url_html_path=$NAGIOS_URL_HTML_PATH"'\n' 'white'
+
+    term.log "    Updating '${NAGIOS_HOME}/etc/cfg.cgi' - rewrite ^$NAGIOS_URL_HTML_PATH"'cgi-bin/(.*)$ /$1;\n'
+    sed -Ei -e 's|^\s+rewrite\s+.*$|    rewrite ^.*/cgi-bin/(.*)$ /$1;|' "$__file"
+    term.log "    Updating '${NAGIOS_HOME}/etc/cgi.cfg' - url_html_path=$NAGIOS_URL_HTML_PATH"'\n'
     sed -Ei -e "s|^(url_html_path=).*$|\1${NAGIOS_URL_HTML_PATH}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    term.log "    Updating '${NAGIOS_HOME}/share/config.inc.php' - \$cfg['cgi_base_url']=$NAGIOS_URL_HTML_PATH"'cgi-bin;\n'
     sed -Ei -e "s|^(.cfg\['cgi_base_url'\]=).*$|\1'${NAGIOS_URL_HTML_PATH}cgi-bin';|" "${NAGIOS_HOME}/share/config.inc.php"
+else
+    term.log "    Updating '${NAGIOS_HOME}/share/config.inc.php' - \$cfg['cgi_base_url']=/cgi-bin;"'\n'
+    sed -Ei -e "s|^(.cfg\['cgi_base_url'\]=).*$|\1'/cgi-bin';|" "${NAGIOS_HOME}/share/config.inc.php"
 fi
 
 
@@ -64,4 +70,4 @@ nagios  --verify-config "${NAGIOS_HOME}/etc/nagios.cfg"
 
 
 # run remainder in a background process
-nohup nagios.finishStartup &
+nagios.finishStartup

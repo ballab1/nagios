@@ -80,24 +80,40 @@ export -f nagios.deployNagiosConfig
 #############################################################################
 function nagios.finishStartup()
 {
+    supervisorctl restart fnagios
+}
+export -f nagios.finishStartup
+
+#############################################################################
+function nagios.finishStartupScript()
+{
     # wait until nagios starts running to create a valid lock file
     local -i count=6
-    until [[ -s /run/nagios.lock  && $(( count-- )) -gt 0 ]] ; do
+    until [[ -s /run/nagios.lock || $(( count-- )) -eq 0 ]] ; do
         sleep 10
-        lib.primaryPid 'nagios' >  /run/nagios.lock ||:
+        (lib.primaryPid 'nagios' >  /run/nagios.lock) ||:
     done
-    chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
+    if [ -s /run/nagios.lock ]; then
+        chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
+    else
+        term.log '    /run/nagios.lock ownership not set\n' 'error'
+    fi
 
     # wait until nagios has created unix socket var/rw/nagios.cmd so we can open its permissions
     count=6
-    until [[ -e "${NAGIOS_HOME}/var/rw/nagios.cmd"  &&  $(( count-- )) -gt 0 ]] ; do
+    until [[ -e "${NAGIOS_HOME}/var/rw/nagios.cmd"  ||  $(( count-- )) -eq 0 ]] ; do
         sleep 10
     done
-    chmod a+rw "${NAGIOS_HOME}/var/rw/nagios.cmd"
+    if [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ]; then
+        chmod a+rw "${NAGIOS_HOME}/var/rw/nagios.cmd"
+    else
+        term.log "    ${NAGIOS_HOME}/var/rw/nagios.cmd mode not set"'\n' 'error'
+    fi
+
 
     term.log '    Finished startup tasks\n' 'yellow'
 }
-export -f nagios.finishStartup
+export -f nagios.finishStartupScript
 
 #############################################################################
 function nagios.gitClone()

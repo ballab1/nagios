@@ -34,6 +34,6 @@ mkdir -p "${NAGIOS_HOME}/libexec/"
 mv /usr/lib/nagios/plugins/* "${NAGIOS_HOME}/libexec/"
 
 
-# nagios process needs set-uid so it can elevate its privelges        
+# nagios process needs set-uid so it can elevate its privileges        
 chmod 6755 /bin/busybox
 

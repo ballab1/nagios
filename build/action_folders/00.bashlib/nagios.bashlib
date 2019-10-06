@@ -34,6 +34,13 @@ function nagios.deployLocal()
     local -r OUTPUT_DIR="${NCONF_HOME}/output"
     local -r outArchive="${OUTPUT_DIR}/NagiosConfig.tgz"
 
+    if [ ! -s /run/nagios.lock ]; then
+        local pid=$(lib.primaryPid 'nagios')
+        [ ${pid:-0} -eq 0 ] && trap.elog 'nagios is not running.'
+        echo "$pid" >  /run/nagios.lock
+        nagios.finishStartupScript
+    fi
+
     # update nagios config if CONF_ARCHIVE is newer than
     [ ! -e "$outArchive" ] || [ "$outArchive" -nt "$tmpArchive" ] || cp "$outArchive" "$tmpArchive"
     if [ ! -e "$tmpArchive" ]; then
@@ -89,11 +96,14 @@ function nagios.finishStartupScript()
 {
     # wait until nagios starts running to create a valid lock file
     local -i count=6
-    until [[ -s /run/nagios.lock || $(( count-- )) -eq 0 ]] ; do
-        sleep 10
+    until [ -s /run/nagios.lock ]; do
+        if [ $(( count-- )) -ne 0 ]; then
+            sleep 10
+            continue
+        fi
         (lib.primaryPid 'nagios' >  /run/nagios.lock) ||:
     done
-    if [ -s /run/nagios.lock ]; then
+    if [ -e /run/nagios.lock ]; then
         chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
     else
         term.log '    /run/nagios.lock ownership not set\n' 'error'
@@ -101,7 +111,7 @@ function nagios.finishStartupScript()
 
     # wait until nagios has created unix socket var/rw/nagios.cmd so we can open its permissions
     count=6
-    until [[ -e "${NAGIOS_HOME}/var/rw/nagios.cmd"  ||  $(( count-- )) -eq 0 ]] ; do
+    until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ] || [ $(( count-- )) -eq 0 ] ; do
         sleep 10
     done
     if [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ]; then

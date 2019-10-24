@@ -38,7 +38,7 @@ function nagios.deployLocal()
         local pid=$(lib.primaryPid 'nagios')
         [ ${pid:-0} -eq 0 ] && trap.elog 'nagios is not running.'
         echo "$pid" >  /run/nagios.lock
-        nagios.finishStartupScript
+        nagios.finishStartup
     fi
 
     # update nagios config if CONF_ARCHIVE is newer than
@@ -87,41 +87,49 @@ export -f nagios.deployNagiosConfig
 #############################################################################
 function nagios.finishStartup()
 {
-    supervisorctl restart fnagios
+#    supervisorctl restart fnagios
+#    nohup /usr/local/bin/nagios.finishStartupScript & disown
+    setsid -f /usr/local/bin/nagios.finishStartupScript
 }
 export -f nagios.finishStartup
 
 #############################################################################
 function nagios.finishStartupScript()
 {
+    term.log "$(date -Iseconds)"' Starting nagios.finishStartupScript\n' 'yellow'
+
     # wait until nagios starts running to create a valid lock file
     local -i count=6
     until [ -s /run/nagios.lock ]; do
-        if [ $(( count-- )) -ne 0 ]; then
-            sleep 10
-            continue
+        if [ $(( count-- )) -eq 0 ]; then
+            (lib.primaryPid 'nagios' >  /run/nagios.lock) ||:
+            break
         fi
-        (lib.primaryPid 'nagios' >  /run/nagios.lock) ||:
+        sleep 10
     done
     if [ -e /run/nagios.lock ]; then
-        chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
+        sudo chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
     else
-        term.log '    /run/nagios.lock ownership not set\n' 'error'
+        term.log "    $NCONF_HOME"'/temp ownership not set\n' 'error'
     fi
 
     # wait until nagios has created unix socket var/rw/nagios.cmd so we can open its permissions
     count=6
-    until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ] || [ $(( count-- )) -eq 0 ] ; do
+    until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ]; do
+        if [ $(( count-- )) -eq 0 ]; then
+            term.log "    $NAGIOS_HOME"'/var/rw/nagios.cmd not found\n' 'error'
+            break
+        fi
         sleep 10
     done
     if [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ]; then
-        chmod a+rw "${NAGIOS_HOME}/var/rw/nagios.cmd"
+        sudo chmod a+rw "${NAGIOS_HOME}/var/rw/nagios.cmd"
     else
-        term.log "    ${NAGIOS_HOME}/var/rw/nagios.cmd mode not set"'\n' 'error'
+        term.log "    $NAGIOS_HOME"'/var/rw/nagios.cmd permissions not set\n' 'error'
     fi
 
-
-    term.log '    Finished startup tasks\n' 'yellow'
+    term.log "$(date -Iseconds)"' Finished nagios startup tasks\n' 'yellow'
+    term.log '\n'
 }
 export -f nagios.finishStartupScript
 

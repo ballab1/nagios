@@ -71,3 +71,4 @@ nagios  --verify-config "${NAGIOS_HOME}/etc/nagios.cfg"
 
 # run remainder in a background process
 nagios.finishStartup
+term.log "$(date -Iseconds)"' Finished nagios startup\n'

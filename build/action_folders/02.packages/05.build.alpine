@@ -4,6 +4,7 @@ declare -a OPTS=( '--virtual' '.buildDependencies' )
 declare -a PKGS=( alpine-sdk
                   bash-completion
                   gnutls-utils
+                  gcc
                   jpeg-dev
                   libpng-dev
                   rrdtool-dev )

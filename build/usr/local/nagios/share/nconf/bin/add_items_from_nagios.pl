@@ -44,7 +44,7 @@ use constant {
 sub process_file($$) {
 
   my ($opt_c, $opt_f) = @_;
-  
+
   tie my %main_hash, 'Tie::IxHash';
   %main_hash = &parseNagiosConfigFile($opt_c, $opt_f);
 
@@ -77,7 +77,7 @@ sub process_file($$) {
 
 
 #########################
-# SUB: display usage information
+# SUB: process all config files
 sub process_all {
 
     my ($opt_f) = @_;
@@ -89,7 +89,7 @@ sub process_all {
     $cfg_files = $attrs->{cfg_file}  if (exists $attrs->{cfg_file});
     if (exists $attrs->{cfg_dir}) {
         for my $dir ( @{$attrs->{cfg_dir}} ) {
-            
+
             opendir(my $dh, $dir) || die "Can't open $dir: $!";
             while (readdir $dh) {
                 next  if ($_ eq '.'  ||  $_ eq '..');
@@ -102,7 +102,7 @@ sub process_all {
     for my $fl ( @{ $cfg_files } ) {
         my $base = basename($fl, '.cfg'). '.cfg';
         process_file(FILES()->{$base}, $fl)   if (exists FILES()->{$base});
-    }    
+    }
 }
 
 
@@ -113,7 +113,7 @@ sub usage {
     print <<"EOT";
 
 Script by Angelo Gargiulo, Sunrise Communications AG
-This script reads an existing Nagios configuration file and imports any items 
+This script reads an existing Nagios configuration file and imports any items
 by creating new items in NConf.
 
 Usage:
@@ -126,7 +126,7 @@ Help:
   -c  Specify the class of items that you wish to import. Must correspond to an NConf class
       (e.g. "main", "host", "service", "hostgroup", "checkcommand", "contact", "timeperiod"...)
 
-  -f  The path to the file which is to be imported. 
+  -f  The path to the file which is to be imported.
       CAUTION: Make sure you have only items of one class in the same file
       (e.g. "hosts.cfg", "services.cfg"...).  Also make sure you import host- or service-templates
       separately ("host" or "service" items containing a "name" attribute)

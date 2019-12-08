@@ -3,6 +3,8 @@
 declare -a PKGS=( findutils
                   mysql-client
                   openssh-client
+                  librdkafka
+                  python
                   sudo
                   ttf-dejavu
                   unzip

@@ -92,7 +92,7 @@ sub dbConnect {
         }
     }
 
-    &logger(4,"Connecting to database '$dbname' on host '$dbhost'");
+    &logger(4,"Connecting to database '$dbname' on host '$dbhost' as user '$dbuser'");
     my $dsn = "DBI:mysql:database=$dbname;host=$dbhost";
 
     # allow use of mysql socket connection rather than TCP connection only
@@ -100,15 +100,24 @@ sub dbConnect {
       $dsn = "DBI:mysql:database=$dbname;mysql_socket=$1";
     }
 
-    my $retries = 3;
-    until ( $NC_dbh = DBI->connect($dsn, $dbuser, $dbpass, { PrintError => 1, RaiseError => 0, AutoCommit => 1 }) ) {
-        if (--$retries == 0) {
-            &logger(1,"Could not connect to database $dbname on $dbhost");
-            return $NC_dbh;
+
+    my $retries = 5;
+    while (--$retries >= 0) {
+
+        eval {
+            $NC_dbh = DBI->connect($dsn, $dbuser, $dbpass, { PrintError => 1, RaiseError => 1, AutoCommit => 1 });
+        };
+        if ($@) {
+            &logger(1,"waiting for database: $dbname");
+            sleep(2);
+            next;
         }
-        &logger(1,"waiting for database: $dbname");
-        sleep 2
+
+        &logger(4,"Connected to database '$dbname' on host '$dbhost' as user '$dbuser'");
+        return $NC_dbh;
     }
+
+    &logger(1,"Could not connect to database '$dbname' on host '$dbhost' as user '$dbuser'");
     $NC_dbh->{PrintError} = 1;
     $NC_dbh->{RaiseError} = 1;
     $NC_dbh->{AutoCommit} = 1;

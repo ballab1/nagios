@@ -38,6 +38,13 @@ else
 fi
 
 
+# fix up ssh access (do not touch original files)
+if [ -d "${NAGIOS_HOME}/.ssh" ]; then
+    chmod 700 "${NAGIOS_HOME}/.ssh"
+    chmod 600 "${NAGIOS_HOME}/.ssh"/*
+    [ -f "${NAGIOS_HOME}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS_HOME}/.ssh/id_rsa.pub"
+fi
+
 # setup file permissions prior to loading our config
 nagios.setPermissions
 

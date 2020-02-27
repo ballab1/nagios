@@ -48,13 +48,7 @@ function nagios.deployLocal()
         return
     fi
 
-    # re-deploy: 'extract' into /usr/local/nagios/etc & 'reload' nagios
-    term.log '    removing old config\n'
-    rm -rf "${NAGIOS_HOME}/etc/Default_collector"/*
-    rm -rf "${NAGIOS_HOME}/etc/global"/*
-    term.log '    deploying new config\n'
-    tar -xzf "$tmpArchive" -C "${NAGIOS_HOME}/etc"
-
+    nagios.refreshConfig "$tmpArchive"
     nagios.gitUpdate '/tmp/config_source_data'
 
     # verify nagios has been running, only restart if it was
@@ -69,13 +63,9 @@ export -f nagios.deployLocal
 #############################################################################
 function nagios.deployNagiosConfig()
 {
-    # re-deploy: 'extract' into /usr/local/nagios/etc & 'reload' nagios
-    declare -r outArchive="${NCONF_HOME}/output/NagiosConfig.tgz"
-    term.log '    removing old config\n'
-    rm -rf "${NAGIOS_HOME}/etc/Default_collector"
-    rm -rf "${NAGIOS_HOME}/etc/global"
-    term.log '    adding new config\n'
-    tar -xzf "$outArchive" -C "${NAGIOS_HOME}/etc"
+    # re-deploy: 'extract' into /usr/local/nagios/etc
+    nagios.refreshConfig "${NCONF_HOME}/output/NagiosConfig.tgz"
+
     [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF_HOME}/temp/generate.lock"
 
     crf.fixupDirectory "$NCONF_HOME/temp" "$( www.UID )"
@@ -179,6 +169,21 @@ function nagios.gitUpdate()
     fi
 }
 export -f nagios.gitUpdate
+
+#############################################################################
+function nagios.refreshConfig()
+{
+    # re-deploy: 'extract' into /usr/local/nagios/etc
+    local -r archive="${1:?}"
+
+    term.log '    removing old config\n'
+    sudo rm -rf "${NAGIOS_HOME}/etc/Default_collector"
+    sudo rm -rf "${NAGIOS_HOME}/etc/global"
+
+    term.log '    adding new config\n'
+    tar -xzf "$archive" -C "${NAGIOS_HOME}/etc"
+}
+export -f nagios.refreshConfig
 
 #############################################################################
 function nagios.removeOldFiles()

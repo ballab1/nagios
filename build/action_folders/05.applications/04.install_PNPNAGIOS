@@ -1,0 +1,28 @@
+#!/bin/bash
+
+tar xzf "${PNP4NAGIOS['file']}"
+cd "${PNP4NAGIOS['dir']}"
+
+
+./configure --prefix="${PNP4NAGIOS['home']}" \
+            --datarootdir="${PNP4NAGIOS['www']}" \
+            --sysconfdir="${PNP4NAGIOS['etc']}" \
+            --localstatedir=/var/nagios \
+            --with-base-url=/pnp4nagios \
+            --bindir="${NAGIOS['home']}/bin" \
+            --with-rrdtool="${NAGIOS['home']}/bin/rrdtool"
+
+make all
+
+mkdir -p /var/nagios/perfdata
+chmod 777 /var/nagios/perfdata
+
+mkdir -p "${PNP4NAGIOS['etc']}"
+mkdir -p "${PNP4NAGIOS['home']}"
+mkdir -p "${PNP4NAGIOS['www']}"
+ln -s "${PNP4NAGIOS['etc']}" "${PNP4NAGIOS['home']}/etc"
+ln -s "${PNP4NAGIOS['www']}" "${PNP4NAGIOS['home']}/share" 
+ln -s "${NAGIOS['home']}/bin" "${PNP4NAGIOS['home']}/bin"
+
+
+make fullinstall

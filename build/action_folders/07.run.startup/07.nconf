@@ -1,7 +1,9 @@
 #!/bin/bash
 
+source "$(crf.ENV)/05.NCONF"
+
 if [ "${NCONF_DBPASS_FILE:-}" ]; then
-    cat << EOT > "$NCONF_HOME/config/mysql.password.inc.php"
+    cat << EOT > "${NCONF['home']}/config/mysql.password.inc.php"
 <?php
 define('DBPASS', '$(< "$NCONF_DBPASS_FILE")');
 ?>
@@ -10,5 +12,11 @@ else
    : ${NCONF_DBPASS:?"Environment variable 'NCONF_DBPASS' not defined in '${BASH_SOURCE[0]}'"}
 fi
 
-crf.fixupDirectory "$NCONF_HOME" "$WWW_UID"
-chmod a+x "$NCONF_HOME/bin"/*
+
+declare -r cfgFile="${NCONF['www']}/config/nconf.php"
+sed -i -E -e "s|^(define\('DEBUG_MODE',).*$|\1 ${NCONF_DEBUG_MODE:-0});|" \
+          -e "s|^(define\('DEBUG_GENERATE',).*$|\1 ${NCONF_DEBUG_GENERATE:-1});|" \
+          "$cfgFile"
+
+crf.fixupDirectory "${NCONF['www']}" "$WWW_UID"
+chmod a+x "${NCONF['home']}/bin"/*

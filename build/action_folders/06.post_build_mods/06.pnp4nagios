@@ -1,0 +1,51 @@
+#!/bin/bash
+
+declare cfgFile="${PNP4NAGIOS['www']}/index.php"
+sed -i -E -e "s|^(define\('PNP_LOG_PATH')\s*,.*$|\1, '/var/log');|" "$cfgFile"
+
+git clone https://github.com/barbushin/php-console.git
+mv php-console/src/PhpConsole "${PNP4NAGIOS['www']}/"
+sed -i -e '11 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Connector.php'"');\n' "$cfgFile"
+sed -i -e '12 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Helper.php'"');\n' "$cfgFile"
+sed -i -e '13 i\PhpConsole\\Handler::getInstance();\n' "$cfgFile"
+
+
+
+# mark config as OK
+touch "${PNP4NAGIOS['www']}/install.ignore"
+
+# setup config in /etc
+ln -s "${PNP4NAGIOS['etc']}" "${PNP4NAGIOS['home']}/etc"
+
+# allow PHP processing to access pnp4nagios directories
+declare shFile="/usr/local/crf/startup/04.php.sh"
+declare org='|open_basedir = ${WWW}/:/tmp/:/etc/phpmyadmin/|'
+declare rep='|open_basedir = ${WWW}/:${NAGIOS['www']}:${NAGIOS['home']}/bin/:${PNP4NAGIOS['home']}/lib/:/var/nagios/perfdata:/tmp/:/etc/phpmyadmin/|'
+sed -i -e 's%'"$org"'%'"$rep"'%' "$shFile"
+
+# pnp4nagios log thresholds:
+#  0 - Disable logging, 1 - Errors and exceptions, 2 - Warnings, 3 - Notices,  4 - Debugging
+cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
+sed -i -E -e "s|(config\['log_threshold'\]).*|\1 = 2;|g" "$cfgFile"
+
+
+declare perfdataDir="$(readlink -f "$(dirname "$(nagios.CFG_PARAM 'host_perfdata_file')")")"
+mkdir -p "$perfdataDir"
+chmod 777 "$perfdataDir"
+
+
+# update all references to rrdtool to use PHP accessible copy
+cd /usr/local
+declare -a rrdtool
+mapfile -t rrdtool < <(grep -rc '/usr/bin/rrdtool' * | grep -v ':0')
+if [ "${#rrdtool[*]}" -gt 0 ]; then
+
+  for f in $(printf '%s\n' "${rrdtool[@]}"| cut -d ':' -f 1); do
+    sed -i -e "s|$(which rrdtool)|${NAGIOS['home']}/bin/rrdtool|g" "$f"
+  done
+fi
+
+# report any not changed
+grep 'open_basedir' "$shFile" ||:
+grep 'log_threshold' "$cfgFile" ||:
+grep -rc '/usr/bin/rrdtool' * | grep -v ':0' ||:

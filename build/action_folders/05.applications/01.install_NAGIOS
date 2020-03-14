@@ -8,8 +8,8 @@ echo '#include <poll.h>' > /usr/include/sys/poll.h
 
 
 cd /tmp
-tar xf "${NCORE['file']}"
-cd "nagios-${NCORE['version']}"
+tar xf "${NAGIOS['file']}"
+cd "${NAGIOS['dir']}"
 
 # hack Makefiles to be compatible with alpine
 while read -r fl; do
@@ -17,23 +17,35 @@ while read -r fl; do
     mv "${fl}.new" "$fl"
 done < <(find . -type f -exec grep -cH 'unzip -u ' '{}' \; | grep -v ':0' | awk 'BEGIN{ FS=":"; }{ printf $1 }')
 
-./configure --with-gd-inc --with-gd-lib --prefix="${NAGIOS_HOME}" --with-lockfile=/run/nagios.lock
+
+./configure --prefix="${NAGIOS['home']}" \
+            --datarootdir="${NAGIOS['www']}" \
+            --sysconfdir="${NAGIOS['etc']}" \
+            --localstatedir=/var/nagios \
+            --with-base-url=/pnp4nagios \
+            --with-lockfile=/run/nagios.lock \
+            --with-gd-inc \
+            --with-gd-lib
+
 make all
+
+mkdir -p "${NAGIOS['etc']}"
+mkdir -p "${NAGIOS['home']}"
+mkdir -p "${NAGIOS['var']}"
+mkdir -p "${NAGIOS['www']}"
+ln -s "${NAGIOS['etc']}" "${NAGIOS['home']}/etc"
+ln -s "${NAGIOS['var']}" "${NAGIOS['home']}/var"
+ln -s "${NAGIOS['www']}" "${NAGIOS['home']}/share"
 
 make install
 make install-init
 make install-commandmode
 make install-classicui
 
-rm -rf "${NAGIOS_HOME}/etc/*"
-ln -s "${NAGIOS_HOME}/etc" /etc/nagios
-ln -s "${NAGIOS_HOME}/bin/nagios" /usr/sbin/nagios
-ln -s "${NAGIOS_HOME}/bin/nagiostats" /usr/sbin/nagiostats
-
-mkdir -p "${NAGIOS_HOME}/libexec/"
-mv /usr/lib/nagios/plugins/* "${NAGIOS_HOME}/libexec/"
+ln -s "${NAGIOS['home']}/bin/nagios" /usr/sbin/nagios
+ln -s "${NAGIOS['home']}/bin/nagiostats" /usr/sbin/nagiostats
+rm -rf "${NAGIOS['etc']}"/*
 
 
-# nagios process needs set-uid so it can elevate its privileges        
-chmod 6755 /bin/busybox
-
+# put copy of rrdtool where PHP can access it
+cp $(which rrdtool) "${NAGIOS['home']}/bin/"

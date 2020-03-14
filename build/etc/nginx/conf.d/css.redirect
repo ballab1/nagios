@@ -1,0 +1,9 @@
+
+location ~* \.css(.*)$ {
+    try_files $uri @css;
+}
+
+location @css {
+    rewrite .*/(.*)$ $1;
+    try_files /css/$uri /nagios/bootstrap-3.3.7/css/$uri /nagios/stylesheets/$uri /pnp4nagios/media/css/$uri /nconf/design_templates/nconf_fresh/$uri;
+}

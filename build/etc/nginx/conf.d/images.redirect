@@ -1,5 +1,10 @@
 
-location ~* .(gd2|jpg|jpeg|png|gif|ico|css|js)$ {
-    rewrite /images/logos/base/(.*)$ /images/logos/$1;
+location ~* .(gd2|jpg|jpeg|png|gif|ico)$ {
     expires 365d;
+    try_files $uri @graphic;
+}
+
+location @graphic {
+    rewrite .*/(.*)$ $1;
+    try_files /nagios/images/$uri /nagios/images/logos/$uri /nconf/img/$uri /nconf/img/logos/base/$uri /pnp4nagios/documents/_media/$uri /pnp4nagios/documents/images/smileys/$uri /pnp4nagios/media/images/$uri;
 }

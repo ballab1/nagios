@@ -17,10 +17,12 @@ ENV DEBUG_TRACE=0
 ARG NCONF_DBHOST='mysql'
 ARG NCONF_DBNAME='nconf'
 ARG NAGIOS_HOME=/usr/local/nagios
+ARG PNP4NAGIOS_HOME=/usr/local/pnp4nagios
+ARG WWW_HOME=/var/www
 
 # nagios.core version being bundled in this docker image
-ARG NCORE_VERSION=4.4.5
-LABEL version.nagios.core=$NCORE_VERSION  
+ARG NAGIOS_VERSION=4.4.5
+LABEL version.nagios.core=$NAGIOS_VERSION  
 
 # nagios.object (cpan) version being bundled in this docker image
 ARG NOBJECT_VERSION=0.21.20
@@ -31,8 +33,8 @@ ARG NCONF_VERSION=1.3.0-0
 LABEL version.nconf=$NCONF_VERSION  
 
 # nagiosgraph being bundled in this docker image
-ARG NGRAPH_VERSION=1.5.2
-LABEL version.nagiosgraph=$NGRAPH_VERSION  
+ARG PNP4NAGIOS_VERSION=0.6.26
+LABEL version.pnp4nagios=$PNP4NAGIOS_VERSION
 
 
 # build content
@@ -46,7 +48,7 @@ RUN set -o verbose \
 EXPOSE 25
 
 #USER nagios
-WORKDIR $NAGIOS_HOME
+WORKDIR $WWW_HOME
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 #CMD ["$CONTAINER_NAME"]

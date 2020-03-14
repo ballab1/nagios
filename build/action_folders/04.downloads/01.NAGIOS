@@ -1,0 +1,16 @@
+#!/bin/bash
+
+declare -A NAGIOS=()
+NAGIOS['version']=${NAGIOS_VERSION:?}
+NAGIOS['file']="/tmp/nagios-${NAGIOS['version']}.tar.gz"
+NAGIOS['dir']="/tmp/nagios-${NAGIOS['version']}"
+NAGIOS['url']="https://assets.nagios.com/downloads/nagioscore/releases/nagios-${NAGIOS['version']}.tar.gz"
+NAGIOS['sha256_4.3.4']="c90b7812d9e343db12be19a572e15c415c5d6353a91c5e226e432c2d4aaa44f1"
+NAGIOS['sha256_4.4.2']="3418923f326aa86dc8c84cfd0df788fa495a90d772f8071acf40fdbef0736853"
+NAGIOS['sha256_4.4.3']="bba8f0e8dc8cf72f7a7ae4e8ce9c60f5bd315629421b9ec34818a28b8da49f67"
+NAGIOS['sha256_4.4.5']="bf69e2d2fae218694585677472d355ba676120cbd024164281e635dc467c391d"
+NAGIOS['sha256']="${NAGIOS['sha256_'${NAGIOS['version']}]}"
+NAGIOS['home']="${NAGIOS_HOME:-/usr/local/nagios}"
+NAGIOS['etc']="${NAGIOS_ETC:-/etc/nagios}"
+NAGIOS['www']="${NAGIOS_WWW:-/var/www/nagios}"
+NAGIOS['var']="${NAGIOS_VAR:-/var/nagios}"

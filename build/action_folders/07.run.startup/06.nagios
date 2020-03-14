@@ -3,19 +3,20 @@
 : ${WWW_UID:?"Environment variable 'WWW_UID' not defined in '${BASH_SOURCE[0]}'"}
 : ${NAGIOS_UID:?"Environment variable 'NAGIOS_UID' not defined in '${BASH_SOURCE[0]}'"}
 
+
 if [ "${PWD_PROTECTED:-}" ] && [ "${NAGIOS_USER:-}" ]; then
     [ "${NAGIOS_PASS:-}" ] || lib.file_env 'NAGIOS_PASS'
     : ${NAGIOS_PASS:?"Environment variable 'NAGIOS_PASS' not defined in '${BASH_SOURCE[0]}'"}
     nginx.setHtPasswd "$NAGIOS_USER" "$NAGIOS_PASS"
 
     # update cgi config for admin user
-    sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS_HOME}/etc/cgi.cfg"
+    sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS['etc']}/cgi.cfg"
 fi
 
 
 # update fcgi config for nagios
-declare __file=/etc/nginx/conf.d/fcgi.redirect
-term.log "    updating '${__file}' to use NAGIOS CGI scripts\n" 'white' 
+declare __file=/etc/nginx/conf.d/fcgiwrap.redirect
+term.log "    updating '${__file}' to use NAGIOS CGI scripts"'\n' 'white' 
 sed -Ei \
      -e 's|^\s*root.*$|    root /usr/local/nagios/sbin;|' \
      -e 's|^\s*fastcgi_param\s+SCRIPT_FILENAME\s+.*$|    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;|' \
@@ -23,26 +24,37 @@ sed -Ei \
 
 
 # update config for url_html_path
-if [ "${NAGIOS_URL_HTML_PATH:-}" ]; then
+if [ "$NAGIOS_URL_HTML_PATH:-}" ]; then
+    declare in out
+
+    # make sure dir has trailing slash
     [[ "$NAGIOS_URL_HTML_PATH" != */ ]] && NAGIOS_URL_HTML_PATH="${NAGIOS_URL_HTML_PATH}/"
 
-    term.log "    Updating '${NAGIOS_HOME}/etc/cfg.cgi' - rewrite ^$NAGIOS_URL_HTML_PATH"'cgi-bin/(.*)$ /$1;\n'
-    sed -Ei -e 's|^\s+rewrite\s+.*$|    rewrite ^.*/cgi-bin/(.*)$ /$1;|' "$__file"
-    term.log "    Updating '${NAGIOS_HOME}/etc/cgi.cfg' - url_html_path=$NAGIOS_URL_HTML_PATH"'\n'
-    sed -Ei -e "s|^(url_html_path=).*$|\1${NAGIOS_URL_HTML_PATH}|" "${NAGIOS_HOME}/etc/cgi.cfg"
-    term.log "    Updating '${NAGIOS_HOME}/share/config.inc.php' - \$cfg['cgi_base_url']=$NAGIOS_URL_HTML_PATH"'cgi-bin;\n'
-    sed -Ei -e "s|^(.cfg\['cgi_base_url'\]=).*$|\1'${NAGIOS_URL_HTML_PATH}cgi-bin';|" "${NAGIOS_HOME}/share/config.inc.php"
-else
-    term.log "    Updating '${NAGIOS_HOME}/share/config.inc.php' - \$cfg['cgi_base_url']=/cgi-bin;"'\n'
-    sed -Ei -e "s|^(.cfg\['cgi_base_url'\]=).*$|\1'/cgi-bin';|" "${NAGIOS_HOME}/share/config.inc.php"
+    term.log "    Updating '${NAGIOS['etc']}/cfg.cgi'"' - rewrite /cgi-bin/(.*)$ /$1;\n'
+
+    in='^(\s+rewrite\s+)[^\s].*$'
+    out='\1^.*/cgi-bin/(.*)$ /$1;'
+    sed -Ei -e "s|${in}|${out}|" "$__file"
+
+    __file="${NAGIOS['etc']}/cgi.cfg"
+    term.log "    Updating '${NAGIOS['etc']}/cgi.cfg' - url_html_path=$NAGIOS_URL_HTML_PATH"'\n'
+    in='^(url_html_path=).*$'
+    out='\1'"$NAGIOS_URL_HTML_PATH"
+    sed -Ei -e "s|${in}|${out}|" "$__file"
+
+    __file="${NAGIOS['www']}/config.inc.php"
+    term.log "    Updating '${NAGIOS['www']}/config.inc.php'"' - $cfg['cgi_base_url']=/cgi-bin;\n'
+    in='^(.cfg['cgi_base_url']=).*$'
+    out='\1'"/cgi-bin';"
+    sed -Ei -e "s|${in}|${out}|" "$__file"
 fi
 
 
 # fix up ssh access (do not touch original files)
-if [ -d "${NAGIOS_HOME}/.ssh" ]; then
-    chmod 700 "${NAGIOS_HOME}/.ssh"
-    chmod 600 "${NAGIOS_HOME}/.ssh"/*
-    [ -f "${NAGIOS_HOME}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS_HOME}/.ssh/id_rsa.pub"
+if [ -d "${NAGIOS['home']}/.ssh" ]; then
+    chmod 700 "${NAGIOS['home']}/.ssh"
+    chmod 600 "${NAGIOS['home']}/.ssh"/*
+    [ -f "${NAGIOS['home']}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS['home']}/.ssh/id_rsa.pub"
 fi
 
 # setup file permissions prior to loading our config
@@ -52,7 +64,7 @@ nagios.setPermissions
 # read Nagios config from GIT if "NAGIOS_REPO" has been specified
 declare -r repo_dir=/tmp/config_source_data
 nagios.gitClone "$repo_dir"
-cd "$repo_dir"
+cd "$repo_dir" ||:
 
 
 # convert password secrets
@@ -61,11 +73,11 @@ cd "$repo_dir"
 
 
 # load mysql with config
-"${NCONF_HOME}/bin/load_nagios_data.pl"
+"${NCONF['home']}/bin/load_nagios_data.pl"
 
 
 # generate new NagiosConfig.tgz from mysql DB
-"${NCONF_HOME}/bin/generate_config.pl"
+"${NCONF['home']}/bin/generate_config.pl"
 
 
 # 'extract' NagiosConfig.tgz into /usr/local/nagios/etc
@@ -73,7 +85,7 @@ nagios.deployNagiosConfig
 
 
 # show configuration verification
-nagios  --verify-config "${NAGIOS_HOME}/etc/nagios.cfg"
+nagios  --verify-config "${NAGIOS['etc']}/nagios.cfg"
 
 
 # run remainder in a background process

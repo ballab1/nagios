@@ -8,3 +8,5 @@ NCONF['url']="https://sourceforge.net/projects/nconf/files/nconf/${NCONF['versio
 NCONF['sha256_1.3.0-0']="be83db273332595a0e1dffab504b3b3c5c6107c37fbd03c22390665d830b6d7b"
 NCONF['sha256']="${NCONF['sha256_'${NCONF['version']}]}"
 NCONF['home']="${NCONF_HOME:-${WWW}/nconf}"
+NCONF['etc']="${NCONF_ETC:-/etc/nagios}"
+NCONF['www']="${NCONF_WWW:-/var/www/nconf}"

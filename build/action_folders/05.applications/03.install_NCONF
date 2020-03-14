@@ -1,15 +1,16 @@
 #!/bin/bash
 
 
-mkdir -p "${WWW}"
-tar xf "${NCONF['file']}" -C "${WWW}" 
+mkdir -p "${NCONF['www']}"
 
-#rm -rf "${NCONF['home']}/ADD-ONS"
-rm -rf "${NCONF['home']}/config.orig"
-rm -rf "${NCONF['home']}/INSTALL"*
-rm -rf "${NCONF['home']}/UPDATE"*
-#rm -rf "${NCONF['home']}/SUMS"*
-mkdir -p "${NCONF['home']}/config"
-mkdir -p "${NCONF['home']}/output"
-mkdir -p "${NCONF['home']}/static_cfg"
-mkdir -p "${NCONF['home']}/temp"
+tar xf "${NCONF['file']}" -C "$WWW" 
+
+#rm -rf "${NCONF['www']}/ADD-ONS"
+rm -rf "${NCONF['www']}/config.orig"
+rm -rf "${NCONF['www']}/INSTALL"*
+rm -rf "${NCONF['www']}/UPDATE"*
+#rm -rf "${NCONF['www']}/SUMS"*
+mkdir -p "${NCONF['www']}/config"
+mkdir -p "${NCONF['www']}/output"
+mkdir -p "${NCONF['www']}/static_cfg"
+mkdir -p "${NCONF['www']}/temp"

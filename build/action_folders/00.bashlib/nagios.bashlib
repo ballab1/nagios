@@ -21,11 +21,18 @@ function nagios.GID()
 export -f nagios.GID
 
 #############################################################################
+function nagios.CFG_PARAM()
+{
+    lib.getProperty ${1:?} "${NAGIOS['etc']}/nagios.cfg"
+}
+export -f nagios.CFG_PARAM
+
+#############################################################################
 function nagios.deployLocal()
 {
-    local -r NAGIOS_HOME="${NAGIOS_HOME:-/usr/local/nagios}"
-    local -r WWW="${WWW:-${NAGIOS_HOME}/share}"
-    local -r NCONF_HOME="${NCONF_HOME:-${WWW}/nconf}"
+#    local -r NAGIOS_HOME="${NAGIOS['home']:-/usr/local/nagios}"
+    local -r WWW="${WWW:-/var/www}"
+    local -r NCONF_HOME="${NCONF['home']:-${WWW}/nconf}"
 
     local -r TEMP_DIR="${NCONF_HOME}/temp"
     [ -e "$TEMP_DIR" ] || mkdir -p "$TEMP_DIR"
@@ -34,12 +41,7 @@ function nagios.deployLocal()
     local -r OUTPUT_DIR="${NCONF_HOME}/output"
     local -r outArchive="${OUTPUT_DIR}/NagiosConfig.tgz"
 
-    if [ ! -s /run/nagios.lock ]; then
-        local pid=$(lib.primaryPid 'nagios')
-        [ ${pid:-0} -eq 0 ] && trap.elog 'nagios is not running.'
-        echo "$pid" >  /run/nagios.lock
-        nagios.finishStartup
-    fi
+    [ ! -s /run/nagios.lock ] && nagios.setNagiosPid
 
     # update nagios config if CONF_ARCHIVE is newer than
     [ ! -e "$outArchive" ] || [ "$outArchive" -nt "$tmpArchive" ] || cp "$outArchive" "$tmpArchive"
@@ -52,7 +54,7 @@ function nagios.deployLocal()
     nagios.gitUpdate '/tmp/config_source_data'
 
     # verify nagios has been running, only restart if it was
-    if [ -e /run/nagios.lock ]; then
+    if [ -e "$(nagios.CFG_PARAM 'lock_file')" ]; then
         term.log '    restarting "nagios" service\n' 'white'
         supervisorctl restart nagios
     fi
@@ -64,13 +66,13 @@ export -f nagios.deployLocal
 function nagios.deployNagiosConfig()
 {
     # re-deploy: 'extract' into /usr/local/nagios/etc
-    nagios.refreshConfig "${NCONF_HOME}/output/NagiosConfig.tgz"
+    nagios.refreshConfig "${NCONF['home']}/output/NagiosConfig.tgz"
 
-    [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF_HOME}/temp/generate.lock"
+    [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF['home']}/temp/generate.lock"
 
-    crf.fixupDirectory "$NCONF_HOME/temp" "$( www.UID )"
-    chown "${WWW_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
-    chmod a+x "${NAGIOS_HOME}/libexec"
+    crf.fixupDirectory "${NCONF['home']}/temp" "$( www.UID )"
+    chown "${WWW_UID}:$WWW_GID" -R "${NCONF['home']}/temp"
+    chmod a+x "${NAGIOS['home']}/libexec"
 }
 export -f nagios.deployNagiosConfig
 
@@ -78,44 +80,41 @@ export -f nagios.deployNagiosConfig
 function nagios.finishStartup()
 {
 #    supervisorctl restart fnagios
-#    nohup /usr/local/bin/nagios.finishStartupScript & disown
-    setsid -f /usr/local/bin/nagios.finishStartupScript
+#    nohup /usr/local/bin/nagios.finishStartupScript &
+#    setsid -f /usr/local/bin/nagios.finishStartupScript
+    :
 }
 export -f nagios.finishStartup
 
 #############################################################################
 function nagios.finishStartupScript()
 {
-    term.log "$(date -Iseconds)"' Starting nagios.finishStartupScript\n' 'yellow'
-
     # wait until nagios starts running to create a valid lock file
     local -i count=6
-    until [ -s /run/nagios.lock ]; do
+    until [ -s "$(nagios.CFG_PARAM 'lock_file')" ]; do
         if [ $(( count-- )) -eq 0 ]; then
-            (lib.primaryPid 'nagios' >  /run/nagios.lock) ||:
+            nagios.setNagiosPid
             break
         fi
         sleep 10
+echo "$(date -Iseconds)"' - nagios.lock count: '"$count"
     done
-    if [ -e /run/nagios.lock ]; then
-        sudo chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF_HOME}/temp"
-    else
-        term.log "    $NCONF_HOME"'/temp ownership not set\n' 'error'
-    fi
 
     # wait until nagios has created unix socket var/rw/nagios.cmd so we can open its permissions
+    local -r commandFile="$(nagios.CFG_PARAM 'command_file')"
     count=6
-    until [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ]; do
+    until [ -e "$commandFile" ]; do
         if [ $(( count-- )) -eq 0 ]; then
-            term.log "    $NAGIOS_HOME"'/var/rw/nagios.cmd not found\n' 'error'
+            term.log "    $commandFile"' not found\n' 'error'
             break
         fi
         sleep 10
+echo "$(date -Iseconds)"' - nagios.cmd count: '"$count"
     done
-    if [ -e "${NAGIOS_HOME}/var/rw/nagios.cmd" ]; then
-        sudo chmod a+rw "${NAGIOS_HOME}/var/rw/nagios.cmd"
+    if [ -e "$commandFile" ]; then
+        sudo chmod a+rw "$commandFile"
     else
-        term.log "    $NAGIOS_HOME"'/var/rw/nagios.cmd permissions not set\n' 'error'
+        term.log "    $commandFile"' permissions not set\n' 'error'
     fi
 
     term.log "$(date -Iseconds)"' Finished nagios startup tasks\n' 'yellow'
@@ -146,7 +145,7 @@ function nagios.gitUpdate()
 
     local -r repodir="${1:?}"
     [ -e "$repodir" ] || mkdir -p "$repodir" ||:
-    cd "$repodir"
+    cd "$repodir" ||:
 
     [ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
     [ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
@@ -154,7 +153,7 @@ function nagios.gitUpdate()
 
 
     # backup latest changes to DBMS
-    "${NCONF_HOME}/bin/dump_nagios_data.pl"
+    "${NCONF['home']}/bin/dump_nagios_data.pl"
 
 
     # check the 'git status' to see if there are any changes  (return SUCCESS on 0-changes)
@@ -174,14 +173,14 @@ export -f nagios.gitUpdate
 function nagios.refreshConfig()
 {
     # re-deploy: 'extract' into /usr/local/nagios/etc
-    local -r archive="${1:?}"
+#    local -r archive="${1:?}"
 
     term.log '    removing old config\n'
-    sudo rm -rf "${NAGIOS_HOME}/etc/Default_collector"
-    sudo rm -rf "${NAGIOS_HOME}/etc/global"
+##    sudo rm -rf "${NAGIOS['etc']}/Default_collector"
+##    sudo rm -rf "${NAGIOS['etc']}/global"
 
-    term.log '    adding new config\n'
-    tar -xzf "$archive" -C "${NAGIOS_HOME}/etc"
+##    term.log '    adding new config\n'
+##    tar -xzf "$archive" -C "${NAGIOS['etc']}"
 }
 export -f nagios.refreshConfig
 
@@ -189,34 +188,52 @@ export -f nagios.refreshConfig
 function nagios.removeOldFiles()
 {
     # clean up any old content out on mounted volumes
-    [ ! -e /run/nagios.lock ] || rm /run/nagios.lock
-    declare -r TEMP_DIR="${NCONF_HOME}/temp"
+    local -r lockFile="$(nagios.CFG_PARAM 'lock_file')"
+    [ ! -e "$lockFile" ] || rm "$lockFile"
+    declare -r TEMP_DIR="${NCONF['home']}/temp"
     [ -e "$TEMP_DIR" ] || mkdir -p "$TEMP_DIR"
     declare -r tmpArchive="${TEMP_DIR}/NagiosConfig.tgz"
     [ ! -e "$tmpArchive" ] || rm "$tmpArchive"
-    find "${NAGIOS_HOME}/var" ! -user nagios -delete
+#    find "${NAGIOS['var']}" ! -user nagios -delete
 }
 export -f nagios.removeOldFiles
+
+#############################################################################
+function nagios.setNagiosPid()
+{
+    local -r lockFile="$(nagios.CFG_PARAM 'lock_file')"
+    local -r pid=$(lib.primaryPid 'nagios')
+    [ "${pid:-0}" -eq 0 ] && term.log 'nagios is not running.\n'
+    term.log "setting $pid in nagios.lock"'\n'
+    echo "$pid" > "$lockFile"
+
+    if [ -e "$lockFile" ]; then
+        sudo chown "${NAGIOS_UID}:$WWW_GID" -R "${NCONF['home']}/temp"
+    else
+        term.log "    ${NCONF['home']}"'/temp ownership not set\n' 'error'
+    fi
+}
+export -f nagios.setNagiosPid
 
 #############################################################################
 function nagios.setPermissions()
 {
     # make sure linked/mounted folders exist
-    mkdir -p /etc/nagios/Default_collector
-    mkdir -p /etc/nagios/global
-    chown nagios:nagios -R /etc/nagios
+    mkdir -p "${NAGIOS['etc']}/Default_collector"
+    mkdir -p "${NAGIOS['etc']}/global"
+    chown nagios:nagios -R "${NAGIOS['etc']}"
 
-    crf.fixupDirectory "$NAGIOS_HOME" "$NAGIOS_UID"
-#    crf.fixupDirectory "${NAGIOS_HOME}/etc" "$NAGIOS_UID"
-#    crf.fixupDirectory "${NAGIOS_HOME}/sbin" "$NAGIOS_UID"
-#    crf.fixupDirectory "${NAGIOS_HOME}/var" "$NAGIOS_UID"
-    [ "${NAGIOS_HOME}/share" = "$WWW" ] || crf.fixupDirectory "${NAGIOS_HOME}/share" "$WWW_UID"
-    [ "$NCONF_HOME" = "$WWW" ] || crf.fixupDirectory "$NCONF_HOME" "$WWW_UID"
+    crf.fixupDirectory "${NAGIOS['home']}" "$NAGIOS_UID"
+#    crf.fixupDirectory "${NAGIOS['etc']}" "$NAGIOS_UID"
+#    crf.fixupDirectory "${NAGIOS['home']}/sbin" "$NAGIOS_UID"
+#    crf.fixupDirectory "${NAGIOS['var']}" "$NAGIOS_UID"
+##    [ "${NAGIOS['home']}/share" = "$WWW" ] || crf.fixupDirectory "${NAGIOS['home']}/share" "$WWW_UID"
+##    [ "${NCONF['home']}" = "$WWW" ] || crf.fixupDirectory "${NCONF['home']}" "$WWW_UID"
 
-    chown "${NAGIOS_UID}:$WWW_GID" -R "${NAGIOS_HOME}/var/rw"
-    chmod a+rx,u+w "${NAGIOS_HOME}/sbin/"*.cgi
-    chmod a+rx,u+w "${NAGIOS_HOME}/bin"/*
-    chmod a+rx,u+w "${NCONF_HOME}/bin"/*
+##    chown "${NAGIOS_UID}:$WWW_GID" -R "${NAGIOS['var']}/rw"
+    chmod a+rx,u+w "${NAGIOS['home']}/sbin/"*.cgi
+    chmod a+rx,u+w "${NAGIOS['home']}/bin"/*
+    chmod a+rx,u+w "${NCONF['home']}/bin"/*
 
     nagios.removeOldFiles
 }

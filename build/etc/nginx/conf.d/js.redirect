@@ -1,0 +1,9 @@
+
+location ~* \.js(.*)$ {
+    try_files $uri @js;
+}
+
+location @js {
+    rewrite .*/(.*)$ $1;
+    try_files /js/$uri nagios/angularjs/$uri /nagios/d3/$uri /nagios/js/$uri /nagios/spin/$uri /nconf/include/js/$uri /pnp4nagios/media/js/$uri;
+}

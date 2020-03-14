@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#source "$(crf.ENV)/02.PNP4NAGIOS"
+sudo mkdir -p /var/log/kohana |:
+
+if [ "${PNP4NAGIOS_LOGLEVEL:-}" ]; then
+    if [[ "${PNP4NAGIOS_LOGLEVEL}" -le 0 || "${PNP4NAGIOS_LOGLEVEL}" -gt 4 ]]; then
+        term.elog "    Invalid PNP4NAGIOS_LOGLEVEL provided: $PNP4NAGIOS_LOGLEVEL\n" 'white' 
+        exit 0
+    fi
+
+    # pnp4nagios log thresholds:
+    #  0 - Disable logging, 1 - Errors and exceptions, 2 - Warnings, 3 - Notices,  4 - Debugging
+    declare cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
+    term.log "    updating '${cfgFile}' with provided 'log_threshold'"'\n' 'white' 
+    sed -i -E -e "s|(config\['log_threshold'\]).*|\1 = $PNP4NAGIOS_LOGLEVEL;|g" "$cfgFile"
+fi

@@ -13,7 +13,7 @@ services:
                 CBF_VERSION: ${CBF_VERSION:-}
                 CONTAINER_NAME: nagios
                 FROM_BASE: ${DOCKER_REGISTRY:-ubuntu-s2:5000/}${CONTAINER_OS:-alpine}/php/${PHP5_VERSION:-5.6.40-r0}:${BASE_TAG:-latest}
-                NCORE_VERSION: ${NCORE_VERSION:-4.4.2}
+                NAGIOS_VERSION: ${NAGIOS_VERSION:-4.4.2}
                 NOBJECT_VERSION: ${NOBJECT_VERSION:-0.21.20}
                 NCONF_VERSION: ${NCONF_VERSION:-1.3.0-0}
                 NGRAPH_VERSION: ${NGRAPH_VERSION:-1.5.2}
@@ -57,7 +57,7 @@ services:
         extra_hosts:
             - \"docker-host:${HOST_IP:?}\"
         hostname: nagios
-        image: ${DOCKER_REGISTRY:-ubuntu-s2:5000/}${CONTAINER_OS:-alpine}/nagios/${NCORE_VERSION:-4.4.2}:${CONTAINER_TAG:-latest}
+        image: ${DOCKER_REGISTRY:-ubuntu-s2:5000/}${CONTAINER_OS:-alpine}/nagios/${NAGIOS_VERSION:-4.4.2}:${CONTAINER_TAG:-latest}
 # deploy arguments, not needed for building
         logging:                              # limit size of logs @runtime so that we do not run out of space 
             driver: json-file

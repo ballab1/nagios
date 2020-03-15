@@ -23,33 +23,6 @@ sed -Ei \
      "$__file"
 
 
-# update config for url_html_path
-if [ "$NAGIOS_URL_HTML_PATH:-}" ]; then
-    declare in out
-
-    # make sure dir has trailing slash
-    [[ "$NAGIOS_URL_HTML_PATH" != */ ]] && NAGIOS_URL_HTML_PATH="${NAGIOS_URL_HTML_PATH}/"
-
-    term.log "    Updating '${NAGIOS['etc']}/cfg.cgi'"' - rewrite /cgi-bin/(.*)$ /$1;\n'
-
-    in='^(\s+rewrite\s+)[^\s].*$'
-    out='\1^.*/cgi-bin/(.*)$ /$1;'
-    sed -Ei -e "s|${in}|${out}|" "$__file"
-
-    __file="${NAGIOS['etc']}/cgi.cfg"
-    term.log "    Updating '${NAGIOS['etc']}/cgi.cfg' - url_html_path=$NAGIOS_URL_HTML_PATH"'\n'
-    in='^(url_html_path=).*$'
-    out='\1'"$NAGIOS_URL_HTML_PATH"
-    sed -Ei -e "s|${in}|${out}|" "$__file"
-
-    __file="${NAGIOS['www']}/config.inc.php"
-    term.log "    Updating '${NAGIOS['www']}/config.inc.php'"' - $cfg['cgi_base_url']=/cgi-bin;\n'
-    in='^(.cfg['cgi_base_url']=).*$'
-    out='\1'"/cgi-bin';"
-    sed -Ei -e "s|${in}|${out}|" "$__file"
-fi
-
-
 # fix up ssh access (do not touch original files)
 if [ -d "${NAGIOS['home']}/.ssh" ]; then
     chmod 700 "${NAGIOS['home']}/.ssh"

@@ -1,6 +1,0 @@
-#!/bin/bash
-
-crf.fixupDirectory "$WWW" "$WWW_UID"
-chown -R "$WWW_UID:$WWW_GID" "$WWW"
-
-declare -r html="${WWW}/index.html"

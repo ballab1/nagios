@@ -10,6 +10,7 @@ declare -ar env_nagios=(
     'NAGIOS_UID=${NAGIOS_UID:-$(nagios.UID "$NAGIOS_USER")}'
     'NAGIOS_GROUP=${NAGIOS_GROUP:-nagios}'
     'NAGIOS_GID=${NAGIOS_GID:-$(nagios.GID "$NAGIOS_GROUP")}'
+    'NAGIOS_HOSTNAME="$(hostname -s)"'
     'PNP4NAGIOS_HOME="${PNP4NAGIOS_HOME:-/usr/local/pnp4nagios}"'
     'USER=${NAGIOS_UID}'
     'WWW="${WWW_HOME:-/var/www}"'

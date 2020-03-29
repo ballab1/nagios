@@ -23,7 +23,8 @@ rmdir /usr/lib/nagios/plugins
 [ ! -f "$(crf.STARTUP)/99.workdir.sh" ]     || rm "$(crf.STARTUP)/99.workdir.sh"
 
 declare -r startFile='/usr/local/bin/run.sh'
-sed -i -e '3 i\nohup /usr/local/bin/nagios.finishStartupScript &\n' "$startFile" 
+sed -i -e '3 i\nohup /usr/local/bin/finishNagiosStartupScript &\n' "$startFile" 
+#sed -i -e '3 i\setsid -f /usr/local/bin/finishNagiosStartupScript &\n' "$startFile" 
 
 declare -r fcgiwrap='/etc/nginx/conf.d/fcgiwrap.redirect'
 sed -i -E -e 's|^\s+rewrite .*$|    rewrite ^.*/cgi-bin/(.*)$ /\$1;|' "$fcgiwrap" 

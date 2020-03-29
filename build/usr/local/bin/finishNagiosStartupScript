@@ -1,14 +1,15 @@
 #!/bin/bash
 
 exec 3>&1  # create special stdout 
+declare bg_log='/var/log/nagios_bg.log'
 {
   source /usr/local/crf/bin/init.runtime
 
   term.log "$(date -Iseconds)"' Starting nagios.finishStartupScript\n' 'yellow' | tee /dev/fd/3
-  nagios.finishStartupScript
+  nagios.finishStartup
 
-}  2>&1  > /var/log/nagios_bg.log
+}  2>&1  > "$bg_log"
 
 exec 3>&-   # close special stdout 
 
-cat /var/log/nagios_bg.log
+cat "$bg_log"

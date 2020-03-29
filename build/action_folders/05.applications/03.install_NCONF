@@ -5,6 +5,8 @@ mkdir -p "${NCONF['www']}"
 
 tar xf "${NCONF['file']}" -C "$WWW" 
 
+mv "${NCONF['www']}/INSTALL/create_database.sql" "$(crf.BIN)/"
+
 #rm -rf "${NCONF['www']}/ADD-ONS"
 rm -rf "${NCONF['www']}/config.orig"
 rm -rf "${NCONF['www']}/INSTALL"*

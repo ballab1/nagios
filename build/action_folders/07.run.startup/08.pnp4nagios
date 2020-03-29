@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#source "$(crf.ENV)/02.PNP4NAGIOS"
-sudo mkdir -p /var/log/kohana |:
+declare cfgFile
 
 if [ "${PNP4NAGIOS_LOGLEVEL:-}" ]; then
     if [[ "${PNP4NAGIOS_LOGLEVEL}" -le 0 || "${PNP4NAGIOS_LOGLEVEL}" -gt 4 ]]; then
@@ -11,7 +10,27 @@ if [ "${PNP4NAGIOS_LOGLEVEL:-}" ]; then
 
     # pnp4nagios log thresholds:
     #  0 - Disable logging, 1 - Errors and exceptions, 2 - Warnings, 3 - Notices,  4 - Debugging
-    declare cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
+    cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
     term.log "    updating '${cfgFile}' with provided 'log_threshold'"'\n' 'white' 
     sed -i -E -e "s|(config\['log_threshold'\]).*|\1 = $PNP4NAGIOS_LOGLEVEL;|g" "$cfgFile"
+
+
+    # Loglevel 0=silent 1=normal 2=debug
+    declare LOG_LEVEL=0
+    case $PNP4NAGIOS_LOGLEVEL in
+      2|3) LOG_LEVEL=1;;
+      4)   LOG_LEVEL=2;;
+    esac
+    declare cfgFile="${PNP4NAGIOS['etc']}/process_perfdata.cfg"
+    term.log "    updating '${cfgFile}' with provided 'LOG_LEVEL'"'\n' 'white' 
+    sed -i -E -e "s|^(LOG_LEVEL\s*=\s*).*$|\1$LOG_LEVEL|g" "$cfgFile"
 fi
+
+if [ "${PNP4NAGIOS_LOGFILE:-}" ]; then
+    mkdir -p "$(dirname "$PNP4NAGIOS_LOGFILE")"
+    cfgFile="${PNP4NAGIOS['etc']}/process_perfdata.cfg"
+    sed -i -E -e "s|^(LOG_FILE\s*=\s*).*$|\1 $PNP4NAGIOS_LOGFILE|g" "$cfgFile"
+fi
+
+cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
+sed -i -e "s|PNP_LOG_PATH.'/kohana';|PNP_LOG_PATH;|" "$cfgFile"

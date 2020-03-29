@@ -50,7 +50,7 @@ function nagios.deployLocal()
         return
     fi
 
-    nagios.refreshConfig "$tmpArchive"
+    nagios.refreshLiveConfig "$tmpArchive"
     nagios.gitUpdate '/tmp/config_source_data'
 
     # verify nagios has been running, only restart if it was
@@ -63,41 +63,20 @@ function nagios.deployLocal()
 export -f nagios.deployLocal
 
 #############################################################################
-function nagios.deployNagiosConfig()
-{
-    # re-deploy: 'extract' into /usr/local/nagios/etc
-    nagios.refreshConfig "${NCONF['home']}/output/NagiosConfig.tgz"
-
-    [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF['home']}/temp/generate.lock"
-
-    crf.fixupDirectory "${NCONF['home']}/temp" "$( www.UID )"
-    chown "${WWW_UID}:$WWW_GID" -R "${NCONF['home']}/temp"
-    chmod a+x "${NAGIOS['home']}/libexec"
-}
-export -f nagios.deployNagiosConfig
-
-#############################################################################
 function nagios.finishStartup()
-{
-#    supervisorctl restart fnagios
-#    nohup /usr/local/bin/nagios.finishStartupScript &
-#    setsid -f /usr/local/bin/nagios.finishStartupScript
-    :
-}
-export -f nagios.finishStartup
-
-#############################################################################
-function nagios.finishStartupScript()
 {
     # wait until nagios starts running to create a valid lock file
     local -i count=6
     until [ -s "$(nagios.CFG_PARAM 'lock_file')" ]; do
+        if [ $(ps faux | grep -cs 'nagios --worker') -gt 1 ]; then
+            nagios.setNagiosPid
+            break
+        fi
         if [ $(( count-- )) -eq 0 ]; then
             nagios.setNagiosPid
             break
         fi
         sleep 10
-echo "$(date -Iseconds)"' - nagios.lock count: '"$count"
     done
 
     # wait until nagios has created unix socket var/rw/nagios.cmd so we can open its permissions
@@ -109,7 +88,6 @@ echo "$(date -Iseconds)"' - nagios.lock count: '"$count"
             break
         fi
         sleep 10
-echo "$(date -Iseconds)"' - nagios.cmd count: '"$count"
     done
     if [ -e "$commandFile" ]; then
         sudo chmod a+rw "$commandFile"
@@ -120,7 +98,7 @@ echo "$(date -Iseconds)"' - nagios.cmd count: '"$count"
     term.log "$(date -Iseconds)"' Finished nagios startup tasks\n' 'yellow'
     term.log '\n'
 }
-export -f nagios.finishStartupScript
+export -f nagios.finishStartup
 
 #############################################################################
 function nagios.gitClone()
@@ -170,19 +148,60 @@ function nagios.gitUpdate()
 export -f nagios.gitUpdate
 
 #############################################################################
-function nagios.refreshConfig()
+function nagios.loadConfigFrom_GIT()
 {
-    # re-deploy: 'extract' into /usr/local/nagios/etc
-#    local -r archive="${1:?}"
+    # read Nagios config from GIT if "NAGIOS_REPO" has been specified
+    local -r repo_dir='/tmp/config_source_data'
+    nagios.gitClone "$repo_dir"
+    cd "$repo_dir" ||:
+
+    # load mysql with config
+    "${NCONF['home']}/bin/load_nagios_data.pl"
+
+    nagios.loadConfigFrom_MYSQL
+}
+export -f nagios.loadConfigFrom_GIT
+
+#############################################################################
+function nagios.loadConfigFrom_MYSQL()
+{
+    # generate new NagiosConfig.tgz from mysql DB
+    "${NCONF['home']}/bin/generate_config.pl"
+
+    # 'extract' NagiosConfig.tgz into ${NCONF['etc']}
+    nagios.refreshLiveConfig "${NCONF['home']}/output/NagiosConfig.tgz"
+}
+export -f nagios.loadConfigFrom_MYSQL
+
+#############################################################################
+function nagios.loadConfigFrom_TGZ()
+{
+    # 'extract' NagiosConfig.tgz into ${NCONF['etc']}
+    nagios.refreshLiveConfig "${NCONF['home']}/output/NagiosConfig.tgz"
+
+    # initialize our DB
+    #mysql -u DBUSER -p DBNAME < INSTALL/create_database.sql
+
+
+    # load mysql with config
+    "${NCONF['home']}/bin/load_nagios_data.pl"
+}
+export -f nagios.loadConfigFrom_TGZ
+
+#############################################################################
+function nagios.refreshLiveConfig()
+{
+    # re-deploy: 'extract' into ${NAGIOS['etc']}
+    local -r archive="${1:?}"
 
     term.log '    removing old config\n'
-##    sudo rm -rf "${NAGIOS['etc']}/Default_collector"
-##    sudo rm -rf "${NAGIOS['etc']}/global"
+    rm -rf "${NAGIOS['etc']}/Default_collector"/*
+    rm -rf "${NAGIOS['etc']}/global"/*
 
-##    term.log '    adding new config\n'
-##    tar -xzf "$archive" -C "${NAGIOS['etc']}"
+    term.log '    adding new config\n'
+    tar -xzf "$archive" -C "${NAGIOS['etc']}"
 }
-export -f nagios.refreshConfig
+export -f nagios.refreshLiveConfig
 
 #############################################################################
 function nagios.removeOldFiles()
@@ -238,3 +257,38 @@ function nagios.setPermissions()
     nagios.removeOldFiles
 }
 export -f nagios.setPermissions
+
+#############################################################################
+function nagios.startup()
+{
+    local config_source="${1:-fromTgz}"
+
+    # convert password secrets
+    [ "${NAGIOS_PASS:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
+    [ "${NCONF_DBPASS:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
+
+
+    # setup file permissions prior to loading our config
+    nagios.setPermissions
+
+    case "$config_source" in
+        fromGit)
+            nagios.loadConfigFrom_GIT ;;
+
+        fromMysql)
+            nagios.loadConfigFrom_MYSQL ;;
+
+        fromTgz)
+            nagios.loadConfigFrom_TGZ ;;
+    esac
+
+    [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF['home']}/temp/generate.lock"
+
+    crf.fixupDirectory "${NCONF['home']}/temp" "$( www.UID )"
+    chown "${WWW_UID}:$WWW_GID" -R "${NCONF['home']}/temp"
+    chmod a+x "${NAGIOS['home']}/libexec"
+    chmod -R a+rw "${NAGIOS['etc']}"
+
+    term.log "$(date -Iseconds)"' Finished nagios startup\n'
+}
+export -f nagios.startup

@@ -70,7 +70,7 @@ sub process_file($$) {
           logger(3, "Successfully added $opt_c $item_print");
       }
       else{
-          logger(1, "Failed to add $opt_c $item_print. Aborting");
+          logger(2, "Failed to add $opt_c $item_print. Aborting");
       }
   }
 }

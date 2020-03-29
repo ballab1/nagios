@@ -30,37 +30,9 @@ if [ -d "${NAGIOS['home']}/.ssh" ]; then
     [ -f "${NAGIOS['home']}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS['home']}/.ssh/id_rsa.pub"
 fi
 
-# setup file permissions prior to loading our config
-nagios.setPermissions
+# make sure our config is what we expect
+nagios.startup "${NAGIOS_CONFIG_SOURCE:-}"
 
 
-# read Nagios config from GIT if "NAGIOS_REPO" has been specified
-declare -r repo_dir=/tmp/config_source_data
-nagios.gitClone "$repo_dir"
-cd "$repo_dir" ||:
-
-
-# convert password secrets
-[ "${NAGIOS_PASS_FILE:-}" ] || lib.file_env 'NAGIOS_PASS_FILE'
-[ "${NCONF_DBPASS_FILE:-}" ] || lib.file_env 'NCONF_DBPASS_FILE'
-
-
-# load mysql with config
-"${NCONF['home']}/bin/load_nagios_data.pl"
-
-
-# generate new NagiosConfig.tgz from mysql DB
-"${NCONF['home']}/bin/generate_config.pl"
-
-
-# 'extract' NagiosConfig.tgz into /usr/local/nagios/etc
-nagios.deployNagiosConfig
-
-
-# show configuration verification
+# verify nagios configuration
 nagios  --verify-config "${NAGIOS['etc']}/nagios.cfg"
-
-
-# run remainder in a background process
-nagios.finishStartup
-term.log "$(date -Iseconds)"' Finished nagios startup\n'

@@ -3,11 +3,11 @@
 declare cfgFile="${PNP4NAGIOS['www']}/index.php"
 sed -i -E -e "s|^(define\('PNP_LOG_PATH')\s*,.*$|\1, '/var/log');|" "$cfgFile"
 
-git clone https://github.com/barbushin/php-console.git
-mv php-console/src/PhpConsole "${PNP4NAGIOS['www']}/"
-sed -i -e '11 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Connector.php'"');\n' "$cfgFile"
-sed -i -e '12 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Helper.php'"');\n' "$cfgFile"
-sed -i -e '13 i\PhpConsole\\Handler::getInstance();\n' "$cfgFile"
+#git clone https://github.com/barbushin/php-console.git
+#mv php-console/src/PhpConsole "${PNP4NAGIOS['www']}/"
+#sed -i -e '11 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Connector.php'"');\n' "$cfgFile"
+#sed -i -e '12 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Helper.php'"');\n' "$cfgFile"
+#sed -i -e '13 i\PhpConsole\\Handler::getInstance();\n' "$cfgFile"
 
 
 
@@ -20,13 +20,16 @@ ln -s "${PNP4NAGIOS['etc']}" "${PNP4NAGIOS['home']}/etc"
 # allow PHP processing to access pnp4nagios directories
 declare shFile="/usr/local/crf/startup/04.php.sh"
 declare org='|open_basedir = ${WWW}/:/tmp/:/etc/phpmyadmin/|'
-declare rep='|open_basedir = ${WWW}/:${NAGIOS['www']}:${NAGIOS['home']}/bin/:${PNP4NAGIOS['home']}/lib/:/var/nagios/perfdata:/tmp/:/etc/phpmyadmin/|'
+declare rep='|open_basedir = ${WWW}/:${NAGIOS['www']}:${NAGIOS['home']}/bin/:${PNP4NAGIOS['home']}/lib/:/var/log:${PNP4NAGIOS['etc']}:/var/nagios:/tmp/:/etc/phpmyadmin/|'
 sed -i -e 's%'"$org"'%'"$rep"'%' "$shFile"
 
 # pnp4nagios log thresholds:
 #  0 - Disable logging, 1 - Errors and exceptions, 2 - Warnings, 3 - Notices,  4 - Debugging
 cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
 sed -i -E -e "s|(config\['log_threshold'\]).*|\1 = 2;|g" "$cfgFile"
+
+cfgFile="${PNP4NAGIOS['etc']}/process_perfdata.cfg"
+sed -i -E -e "s|^(LOG_FILE\s*=\s*).*$|\1/var/log/pnp4nagios.log|g" "$cfgFile"
 
 
 declare perfdataDir="$(readlink -f "$(dirname "$(nagios.CFG_PARAM 'host_perfdata_file')")")"
@@ -49,3 +52,8 @@ fi
 grep 'open_basedir' "$shFile" ||:
 grep 'log_threshold' "$cfgFile" ||:
 grep -rc '/usr/bin/rrdtool' * | grep -v ':0' ||:
+
+
+cfgFile="${NGINX['etc']}/conf.d/php_fpm.redirect"
+sed -i -e '1 i\location ~ ^(/pnp4nagios.*\\.php)(.*)$ {\n    root /var/www/pnp4nagios;\n    try_files $uri @pnp4nagios;\n}\n\n' "$cfgFile"
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source /usr/local/crf/bin/init.runtime
+
+declare debug=''
+[ ${DEBUG:-0} -ne 0 ] && debug='-d'
+
+"${NAGIOS['home']}/bin/verify_pnp_config.pl" "${debug:-}" -c "${NAGIOS['etc']}/nagios.cfg" -m sync -p "${PNP4NAGIOS['etc']}"

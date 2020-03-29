@@ -11,6 +11,7 @@ cd "${PNP4NAGIOS['dir']}"
             --with-base-url=/pnp4nagios \
             --bindir="${NAGIOS['home']}/bin" \
             --with-rrdtool="${NAGIOS['home']}/bin/rrdtool"
+#            --libdir="${PNP4NAGIOS['home']}/lib"
 
 make all
 

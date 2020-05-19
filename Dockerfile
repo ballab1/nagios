@@ -21,7 +21,7 @@ ARG PNP4NAGIOS_HOME=/usr/local/pnp4nagios
 ARG WWW_HOME=/var/www
 
 # nagios.core version being bundled in this docker image
-ARG NAGIOS_VERSION=4.4.5
+ARG NAGIOS_VERSION=4.4.6
 LABEL version.nagios.core=$NAGIOS_VERSION  
 
 # nagios.object (cpan) version being bundled in this docker image

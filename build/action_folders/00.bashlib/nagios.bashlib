@@ -199,6 +199,7 @@ function nagios.refreshLiveConfig()
     rm -rf "${NAGIOS['etc']}/global"/*
 
     term.log '    adding new config\n'
+
     tar -xzf "$archive" -C "${NAGIOS['etc']}"
 }
 export -f nagios.refreshLiveConfig

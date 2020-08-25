@@ -2,16 +2,17 @@
 
 
 mkdir -p "${NCONF['www']}"
+tar xf "${NCONF['file']}" 
+mv "${NCONF['dir']}"/* "${NCONF['www']}"/
 
-tar xf "${NCONF['file']}" -C "$WWW" 
 
-mv "${NCONF['www']}/INSTALL/create_database.sql" "$(crf.BIN)/"
+[ -e "${NCONF['www']}/INSTALL/create_database.sql" ] && mv "${NCONF['www']}/INSTALL/create_database.sql" "$(crf.BIN)/"
 
-#rm -rf "${NCONF['www']}/ADD-ONS"
-rm -rf "${NCONF['www']}/config.orig"
-rm -rf "${NCONF['www']}/INSTALL"*
-rm -rf "${NCONF['www']}/UPDATE"*
-#rm -rf "${NCONF['www']}/SUMS"*
+#[ -e "${NCONF['www']}/ADD-ONS" ] && rm -rf "${NCONF['www']}/ADD-ONS"
+[ -e "${NCONF['www']}/config.orig" ] && rm -rf "${NCONF['www']}/config.orig"
+[ -e "${NCONF['www']}/INSTALL" ] && rm -rf "${NCONF['www']}/INSTALL"*
+[ -e "${NCONF['www']}/UPDATE" ] && rm -rf "${NCONF['www']}/UPDATE"*
+#[ -e "${NCONF['www']}/SUMS" ] && rm -rf "${NCONF['www']}/SUMS"*
 mkdir -p "${NCONF['www']}/config"
 mkdir -p "${NCONF['www']}/output"
 mkdir -p "${NCONF['www']}/static_cfg"

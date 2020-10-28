@@ -4,9 +4,9 @@ export IFS=$'\t\n '
 
  
 cd ${TOOLS}
-tar xf "${NPLUGIN['file']}"
+tar xf "${NPLUGINS['file']}"
 
-cd "nagios-plugins-${NPLUGIN['version']}"
+cd "nagios-plugins-${NPLUGINS['version']}"
 ./configure --with-mysql --with-gnutls --without-dbi --without-radius  # --with-ldap --with_pgsql=... 
 make
 make install

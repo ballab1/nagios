@@ -135,7 +135,7 @@ function nagios.gitUpdate()
 
 
     # check the 'git status' to see if there are any changes  (return SUCCESS on 0-changes)
-    local -i numberOfChanges=$(git status --porcelain | grep -c '^ M ')
+    local -i numberOfChanges=$(git status --porcelain 2>/dev/null | grep -c '^ M ' ||:)
     term.log "    number of Changes:      ${numberOfChanges}"'\n'
     if [[ $numberOfChanges -gt 0 ]]; then
         # update our git repo with changes
@@ -199,8 +199,7 @@ function nagios.refreshLiveConfig()
     rm -rf "${NAGIOS['etc']}/global"/*
 
     term.log '    adding new config\n'
-
-    tar -xzf "$archive" -C "${NAGIOS['etc']}"
+    tar x -zf "$archive" -C "${NAGIOS['etc']}"
 }
 export -f nagios.refreshLiveConfig
 
@@ -286,9 +285,9 @@ function nagios.startup()
     [ ! -e "${NCONF_HOME}/temp/generate.lock" ] || rm "${NCONF['home']}/temp/generate.lock"
 
     crf.fixupDirectory "${NCONF['home']}/temp" "$( www.UID )"
-    chown "${WWW_UID}:$WWW_GID" -R "${NCONF['home']}/temp"
-    chmod a+x "${NAGIOS['home']}/libexec"
-    chmod -R a+rw "${NAGIOS['etc']}"
+    sudo chown "${WWW_UID}:$WWW_GID" -R "${NCONF['home']}/temp"
+    sudo chmod a+x "${NAGIOS['home']}/libexec"
+    sudo chmod -R a+rw "${NAGIOS['etc']}"
 
     term.log "$(date -Iseconds)"' Finished nagios startup\n'
 }

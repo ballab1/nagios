@@ -36,6 +36,9 @@ LABEL version.nconf=$NCONF_VERSION
 ARG PNP4NAGIOS_VERSION=0.6.26
 LABEL version.pnp4nagios=$PNP4NAGIOS_VERSION
 
+# npugins being bundled in this docker image
+#ARG NPLUGINS_VERSION=2.2.3
+#LABEL version.nplugin=$NPLUGINS_VERSION
 
 # build content
 RUN set -o verbose \

@@ -14,9 +14,9 @@
 # Captures stdout and stderr into a file and returns original results to Nagios.
 #
 #
-# This software is licensed under the terms of the GNU General Public License Version 2 
+# This software is licensed under the terms of the GNU General Public License Version 2
 # as published by the Free Software Foundation.
-# It is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, 
+# It is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN,
 # MERCHANTABILITY, AND FITNESS FOR A PARTICULAR PURPOSE.
 #
 
@@ -24,7 +24,7 @@ use strict;
 use constant UNKNOWN => 3;
 # This plugin does not need any nagios utils. It just interfaces the original plugin.
 
-my $LOG_FILE = "/var/log/captured-plugins.log";
+my $LogFile = "/var/log/captured-plugins.log";
 
 my ($cmd, $ret_code, $output,$numArgs, $argnum,$LogFile);
 # First display all arguments
@@ -34,7 +34,7 @@ $numArgs = $#ARGV + 1;
 
 $cmd = $ARGV[0];
 if ( ! -x $cmd ) {
-  print LogFile "$cmd is not executable\n"; 
+  print LOG_FILE "$cmd is not executable\n";
   exit UNKNOWN;
 }
 foreach $argnum (1 .. $#ARGV) {
@@ -53,12 +53,19 @@ $output = `$cmd 2>&1`;
 $ret_code = $?>>8;
 
 # if unsuccessful return UNKNWON to Nagios
-open (LogFile, ">>$LOG_FILE") || warn ("Cannot open logfile $LOG_FILE: $!") && exit UNKNOWN;
+open (LOG_FILE, ">>$LogFile") || warn ("Cannot open logfile $LogFile: $!") && exit UNKNOWN;
 # log the start, output, retcode & end
-print LogFile "$theTime ------ debugging\ncmd=[$cmd]\noutput=[$output]\nretcode=$ret_code\n-------\n";
-close (LogFile) or warn "$0: close($LOG_FILE) failed: $!" && exit UNKNOWN;
+print LOG_FILE "$theTime ------ debugging\ncmd=[$cmd]\n  output=[$output]\n  retcode=$ret_code\n  environment:\n";
+foreach my $key ( sort keys %ENV ) {
+  if ( $key =~ /^(NAGIOS|ICINGA)_(.*)/ ) {
+    print LOG_FILE '    ' . $key . ' = ' . $ENV{$key} . "\n";
+  }
+}
+print LOG_FILE "-------\n";
+
+close (LOG_FILE) or warn "$0: close($LogFile) failed: $!" && exit UNKNOWN;
 # avoid access problems for others.
-chmod(0666,$LOG_FILE);
+chmod(0666,$LogFile);
 
 # now return the original result to Nagios
 if ($ret_code > UNKNOWN){

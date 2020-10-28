@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ supervisorctl stop nagios
+ 
+ :> /var/log/nagios.log
+ 
+ supervisorctl start nagios

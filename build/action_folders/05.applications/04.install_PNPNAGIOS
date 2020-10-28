@@ -21,9 +21,13 @@ chmod 777 /var/nagios/perfdata
 mkdir -p "${PNP4NAGIOS['etc']}"
 mkdir -p "${PNP4NAGIOS['home']}"
 mkdir -p "${PNP4NAGIOS['www']}"
+
 ln -s "${PNP4NAGIOS['etc']}" "${PNP4NAGIOS['home']}/etc"
 ln -s "${PNP4NAGIOS['www']}" "${PNP4NAGIOS['home']}/share" 
 ln -s "${NAGIOS['home']}/bin" "${PNP4NAGIOS['home']}/bin"
 
 
 make fullinstall
+
+wget "https://github.com/lingej/pnp-metrics-api/raw/master/application/controller/api.php" \
+     -O /var/www/pnp4nagios/application/controllers/api.php

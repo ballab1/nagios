@@ -32,5 +32,7 @@ if [ "${PNP4NAGIOS_LOGFILE:-}" ]; then
     sed -i -E -e "s|^(LOG_FILE\s*=\s*).*$|\1 $PNP4NAGIOS_LOGFILE|g" "$cfgFile"
 fi
 
+[ "$(which mail)" ] || (cd /bin ; ln -s true mail) 
+
 cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
 sed -i -e "s|PNP_LOG_PATH.'/kohana';|PNP_LOG_PATH;|" "$cfgFile"

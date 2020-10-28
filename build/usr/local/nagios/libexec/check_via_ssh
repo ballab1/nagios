@@ -1,0 +1,380 @@
+#!/usr/bin/perl -w
+#
+#
+# check_via_ssh.pl <host> <disk> <user> <pass> [warn] [critical] [port]
+#
+# Nagios host script to get the disk usage using SSH
+#
+# Changes and Modifications
+# =========================
+# 10-11-2020 Bob Ballantyne
+#
+#
+
+require 5.004;
+use POSIX;
+use strict;
+use Getopt::Long;
+use vars qw($opt_P $opt_V $opt_A $opt_P $opt_F $opt_h $opt_H $opt_u $opt_p $opt_w $opt_c $verbose);
+use vars qw($PROGNAME);
+use FindBin;
+use lib "$FindBin::Bin";
+use utils qw($TIMEOUT %ERRORS &print_revision &support &usage);
+use constant { FALSE => 0, TRUE => 1 };
+
+
+sub output_and_error_of (@);
+sub parse_line ($);
+sub print_help ();
+sub print_usage ();
+
+our $VERSION = '1.0.0';
+
+
+my $DEBUG = FALSE;
+$verbose = $DEBUG;
+$PROGNAME = "check_via_ssh";
+
+
+$ENV{'PATH'}='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin';
+$ENV{'BASH_ENV'}=''; 
+$ENV{'ENV'}='';
+
+Getopt::Long::Configure('bundling');
+GetOptions
+    ("v"   => \$verbose, "verbose"    => \$verbose,
+     "V"   => \$opt_V, "version"      => \$opt_V,
+     "h"   => \$opt_h, "help"         => \$opt_h,
+     "H=s" => \$opt_H, "hostname=s"   => \$opt_H,
+     "F=s" => \$opt_F, "path=s"       => \$opt_F,
+     "P=s" => \$opt_P, "port=s"       => \$opt_P,
+     "w=s" => \$opt_w, "warning=s"    => \$opt_w,
+     "c=s" => \$opt_c, "critical=s"   => \$opt_c,
+     "p=s" => \$opt_p, "password=s"   => \$opt_p,
+     "u=s" => \$opt_u, "username=s"   => \$opt_u,
+     "A=s" => \$opt_A, "auth_file=s"  => \$opt_A);
+
+if ($opt_V) {
+    print_revision($PROGNAME,$VERSION);
+    exit $ERRORS{'OK'};
+}
+
+if ($opt_h) {print_help(); exit $ERRORS{'OK'};};
+
+my $sshclient = '/usr/bin/ssh';
+-x $sshclient || usage("check requires ssh, $sshclient: $!\n");
+
+if ($DEBUG) {
+    open (LOG, '>>', '/var/log/check_via_ssh.log');
+    print LOG "\n====================================================================\n";
+    print LOG join("\n",@ARGV)."\n";
+}
+
+# Options checking
+
+($opt_H) || ($opt_H = shift @ARGV) || usage("Host name not specified\n");
+my $host = $1 if ($opt_H =~ m|^([-_.A-Za-z0-9 ]+\$?)$|);
+($host) || usage("Invalid host: $opt_H\n");
+
+($opt_F) || ($opt_F = shift @ARGV) || usage("folder name not specified\n");
+my $path = $1 if ($opt_F =~ m|^([A-Za-z0-9/]+)$|);
+($path) || usage("Invalid folder: $opt_F\n");
+
+
+my ($auth_file, $user, $pass);
+if (defined($opt_A)) {
+   $auth_file = $1 if ($opt_A =~ m|(.*)|);
+}
+if (defined($opt_u)) {
+   $user = 'guest';
+   $user = $1 if ($opt_u =~ m|^([-_.A-Za-z0-9/]*)$|);
+}
+if (defined($opt_p)) {
+   $pass = '';
+   $pass = $1 if ($opt_p =~ m|(.*)|);
+}
+defined($user) || defined($auth_file) || usage("Invalid credentials - opt_u: $opt_u, opt_A: $opt_A \n");
+
+($opt_w) || ($opt_w = shift @ARGV) || ($opt_w = 85);
+my $warn = $1 if ($opt_w =~ /^([0-9]{1,2}\%?|100\%?|[0-9]+[kMG])$/);
+($warn) || usage("Invalid warning threshold: $opt_w\n");
+
+($opt_c) || ($opt_c = shift @ARGV) || ($opt_c = 95);
+my $crit = $1 if ($opt_c =~ /^([0-9]{1,2}\%?|100\%?|[0-9]+[kMG])$/);
+($crit) || usage("Invalid critical threshold: $opt_c\n");
+
+
+# split the type from the unit value
+#Check $warn and $crit for type (%/M/G) and set up for tests
+#P = Percent, K = KBytes
+my $warn_type;
+my $crit_type;
+
+if ($opt_w =~ /^([0-9]+)\%?$/) {
+    $warn = "$1";
+    $warn_type = "P";
+} 
+elsif ($opt_w =~ /^([0-9]+)k$/) {
+    $warn_type = "K";
+    $warn = $1;
+}
+elsif ($opt_w =~ /^([0-9]+)M$/) {
+    $warn_type = "K";
+    $warn = $1 * 1024;
+}
+elsif ($opt_w =~ /^([0-9]+)G$/) {
+    $warn_type = "K";
+    $warn = $1 * 1048576;
+}
+
+if ($opt_c =~ /^([0-9]+)\%?$/) {
+    $crit = "$1";
+    $crit_type = "P";
+}
+elsif ($opt_c =~ /^([0-9]+)k$/) {
+    $crit_type = "K";
+    $crit = $1;
+}
+elsif ($opt_c =~ /^([0-9]+)M$/) {
+    $crit_type = "K";
+    $crit = $1 * 1024;
+}
+elsif ($opt_c =~ /^([0-9]+)G$/) {
+    $crit_type = "K";
+    $crit = $1 * 1048576;
+}
+
+# check if both warning and critical are percentage or size
+unless( ( $warn_type eq "P" && $crit_type eq "P" ) || ( $warn_type ne "P" && $crit_type ne "P" ) ){
+    $opt_w =~ s/\%/\%\%/g;
+    $opt_c =~ s/\%/\%\%/g;
+    usage("Both warning and critical should be same type- warning: $opt_w critical: $opt_c \n");
+}
+
+# verify warning is less than critical
+if ( $warn_type eq "K") {
+    unless ( $warn > $crit) {
+        usage("Disk size: warning ($opt_w) should be greater than critical ($opt_c) \n");
+    }
+}
+else {
+    unless ( $warn < $crit) {
+        $opt_w =~ s/\%/\%\%/g;
+        $opt_c =~ s/\%/\%\%/g;
+        usage("Percentage: warning ($opt_w) should be less than critical ($opt_c) \n");
+    }
+}
+
+# end of options checking
+
+
+$host = "$user" . '@' . "$host"     if defined($user);
+
+my $state = 'OK';
+my $answer = undef;
+my $res = undef;
+my $perfdata = '';
+my @lines = undef;
+
+
+# Execute cmd using sshclient program
+# get the results into $res
+my @cmd = (
+    $sshclient,
+    defined($auth_file) ? ('-i', "$auth_file") : (),
+    defined($opt_p) ? ('-p', $opt_p) : (),
+    "$host",
+    qq#df $path | sed -n '2 p'#
+);
+
+if ($DEBUG) {
+    print LOG "\n====================================================================\n";
+    print LOG "host: $host, " if defined($host);
+    print LOG "path: $path, " if defined($path);
+    print LOG "user: $user, " if defined($user);
+    print LOG "pass: $pass, " if defined($pass);
+    print LOG "auth_file: $auth_file, " if defined($auth_file);
+    print LOG "warn: $warn, " if defined($warn);
+    print LOG "crit: $crit, " if defined($crit);
+    print LOG "warn_type: $warn_type, " if defined($warn_type);
+    print LOG "crit_type: $crit_type, " if defined($crit_type);
+    print LOG "\n\n----------------------\n".join(' ',@cmd)."\n";
+}
+
+
+# Just in case of problems, let's not hang Nagios
+$SIG{'ALRM'} = sub { 
+    print "No Answer from Client\n";
+    exit $ERRORS{'UNKNOWN'};
+};
+
+print join(' ', @cmd) . "\n" if ($verbose);
+alarm(60);
+
+$res = output_and_error_of(@cmd) or exit $ERRORS{'UNKNOWN'};
+
+#Turn off alarm
+alarm(0);
+print LOG "\n----------------------\n".$res."\n"  if ($DEBUG);
+
+#Split $res into an array of lines
+@lines = split /\n/, $res;
+
+#Get the last line into $_
+$_ = $lines[$#lines-1];
+#print "$_\n";
+
+$answer = 'Result from ssh not suitable';
+$state = 'UNKNOWN';
+
+foreach (@lines) {
+    my @result = parse_line($_);
+    if ($result[0] == TRUE) {
+        $perfdata = $result[1];
+        $state = $result[2];
+        $answer = $result[3];
+        last;
+    }
+}
+
+print LOG "answer: $answer, perfdata: $perfdata, state: $state \n"  if ($DEBUG);
+
+print $answer;
+print " | " . $perfdata if ($perfdata);
+print "\n";
+print "$state\n" if ($verbose);
+exit $ERRORS{$state};
+
+##################################################################################
+
+
+# Execute the given command line and return anything it writes to STDOUT and/or
+# STDERR.  (This might be useful for other plugins, too, so it should possibly
+# be moved to utils.pm.)
+sub output_and_error_of (@) {
+    local *CMD;
+    local $/ = undef;
+    my $pid = open CMD, "-|";
+    if (defined($pid)) {
+        if ($pid) {
+            return <CMD>;
+        }
+        else {
+            open STDERR, ">&STDOUT" and exec @_;
+            exit $ERRORS{'WARNING'};
+        }
+    }
+    return undef;
+}
+
+#Process the lines
+sub parse_line ($) {
+    my $line = shift;
+    
+    if (/(Access denied|NT_STATUS_LOGON_FAILURE|NT_STATUS_ACCESS_DENIED|load pubkey .*: invalid format)/) {
+        return (TRUE, '', 'CRITICAL', 'Access Denied');
+    }
+    
+    if (/(Unknown host \w*|Connection.*failed)/) {
+        return (TRUE, '', 'CRITICAL', "$1");
+    }
+    
+    if (/(ERROR:.*)/) {
+        return (TRUE, '', 'CRITICAL', "$1");
+    }
+    
+    if (m|^(/dev/[^\s]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)%?\s+(.+)$|) {
+
+        my ($filesystem) = $1;
+        my ($total_blocks) = $2;
+        my ($used_blocks) = $3;
+        my ($avail_blocks) = $4;
+        my ($pct_used) = $5;
+        my ($mount_point) = $6;
+
+        my ($warn_blocks) = $warn;
+        if ($warn_type eq "P") {
+            $warn_blocks = $warn * $total_blocks / 100.;
+        }
+        my ($crit_blocks) = $crit;
+        if ($crit_type eq "P") {
+            $crit_blocks = $crit * $total_blocks / 100.;
+        }
+
+
+        if (int($avail_blocks / 1024) == 0) {
+            $avail_blocks = $avail_blocks ."K";
+        }
+        else {
+            $avail_blocks = int($avail_blocks / 1024);
+            if (int($avail_blocks /1024) == 0) {
+                $avail_blocks = $avail_blocks ."M";
+            }
+            else {
+                $avail_blocks = (int(($avail_blocks / 1024)*100))/100;
+                $avail_blocks = $avail_blocks ."G";
+            }
+        }
+
+        #print ":$warn:$warn_type:\n";
+        #print ":$crit:$crit_type:\n";
+
+        my $perfdata = qq#'Folder'=${used_blocks}KB;#
+            . $warn_blocks . ';'
+            . $crit_blocks . ';'
+            . '0;'
+            . $total_blocks;
+
+        my ($free) = 100 - $pct_used;
+        if ($used_blocks > $crit_blocks) {
+            return (TRUE, $perfdata, 'CRITICAL', "${filesystem} CRITICAL: Only ${avail_blocks} ($free%) free on '${mount_point}'");
+        }
+        
+        if ($used_blocks > $warn_blocks) {
+            return (TRUE, $perfdata, 'WARNING', "${filesystem} WARNING: Only ${avail_blocks} ($free%) free on '${mount_point}'");
+        }
+        
+        return (TRUE, $perfdata, 'OK', "${filesystem} OK - ${avail_blocks} ($free%) free on '${mount_point}'"); 
+
+    }
+    return (FALSE, 'OK', undef, undef, undef);
+}
+
+sub print_usage () {
+    print "Usage: $PROGNAME -H <host> -F <folder> -w <warn> -c <crit>
+             [-P <port>] [-u <user> [-p <password>] -A [auth_file]]\n";
+    exit $ERRORS{'UNKNOWN'};
+}
+
+sub print_help () {
+    print_revision($PROGNAME,$VERSION);
+    print "Copyright (c) 2020 Bob Ballantyne
+
+Perl Check via ssh plugin for Nagios
+
+";
+    print_usage();
+    print "
+-H, --hostname=HOST
+   IP-address/name of HOST
+-F, --folder=path
+   folder name to check
+-u, --user=STRING
+   Username to log in to server. (Defaults to \"guest\")
+-p, --password=STRING
+   Password to log in to server. (Defaults to an empty password)
+-w, --warning=INTEGER or INTEGER[kMG]
+   Percent of used space at which a warning will be generated (Default: 85%)      
+-c, --critical=INTEGER or INTEGER[kMG]
+   Percent of used space at which a critical will be generated (Defaults: 95%)
+-P, --port=INTEGER
+   Port to be used to connect to. Some Windows boxes use 139, others 445 (Defaults to sshclient default)
+   
+   If thresholds are followed by either a k, M, or G then multiply values accordingly
+
+   Warning percentage should be less than critical
+   Warning (remaining) disk space should be greater than critical.
+
+";
+    support();
+}

@@ -1,65 +1,21 @@
-#!/usr/bin/perl -w
-#
-#
-# check_disk.pl <host> <share> <user> <pass> [warn] [critical] [port]
-#
-# Nagios host script to get the disk usage from a SMB share
-#
-# Changes and Modifications
-# =========================
-# 7-Aug-1999 - Michael Anthon
-#  Created from check_disk.pl script provided with netsaint_statd (basically
-#  cause I was too lazy (or is that smart?) to write it from scratch)
-# 8-Aug-1999 - Michael Anthon
-#  Modified [warn] and [critical] parameters to accept format of nnn[M|G] to
-#  allow setting of limits in MBytes or GBytes.  Percentage settings for large
-#  drives is a pain in the butt
-# 2-May-2002 - SGhosh fix for embedded perl
-#
+#!/bin/bash
 #
 
-require 5.004;
-use POSIX;
-use strict;
-use Getopt::Long;
-use vars qw($opt_P $opt_V $opt_A $opt_h $opt_H $opt_s $opt_W $opt_u $opt_p $opt_w $opt_c $opt_a $verbose);
-use vars qw($PROGNAME);
-use FindBin;
-use lib "$FindBin::Bin";
-use utils qw($TIMEOUT %ERRORS &print_revision &support &usage);
-use constant { FALSE => 0, TRUE => 1 };
-
-
-sub output_and_error_of (@);
-sub parse_line ($);
-sub print_help ();
-sub print_usage ();
-
-my $DEBUG = TRUE;
-$PROGNAME = "check_disk_smb";
-
-$ENV{'PATH'}='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin';
-$ENV{'BASH_ENV'}=''; 
-$ENV{'ENV'}='';
+declare -r PROGNAME="${BASH_SOURCE[0]}"
+declare -r VERSION=1.0.0'
 
 Getopt::Long::Configure('bundling');
 GetOptions
-    ('v'   => \$verbose, 'verbose'    => \$verbose,
-     'P=s' => \$opt_P, 'port=s'     => \$opt_P,
-     'V'   => \$opt_V, 'version'    => \$opt_V,
-     'h'   => \$opt_h, 'help'       => \$opt_h,
-     'w=s' => \$opt_w, 'warning=s'  => \$opt_w,
-     'c=s' => \$opt_c, 'critical=s' => \$opt_c,
-     'p=s' => \$opt_p, 'password=s' => \$opt_p,
-     'u=s' => \$opt_u, 'username=s' => \$opt_u,
-     'A=s' => \$opt_A, 'auth_file=s' => \$opt_A,
-     's=s' => \$opt_s, 'share=s'    => \$opt_s,
-     'W=s' => \$opt_W, 'workgroup=s' => \$opt_W,
-     'H=s' => \$opt_H, 'hostname=s' => \$opt_H,
-     'a=s' => \$opt_a, 'address=s' => \$opt_a);
+    ("v"   => \$verbose, "verbose"    => \$verbose,
+     "V"   => \$opt_V, "version"    => \$opt_V,
+     "h"   => \$opt_h, "help"       => \$opt_h,
+     "w=s" => \$opt_w, "warning=s"  => \$opt_w,
+     "c=s" => \$opt_c, "critical=s" => \$opt_c,
+     "H=s" => \$opt_H, "hostname=s" => \$opt_H,
+     "a=s" => \$opt_a, "address=s" => \$opt_a);
 
 if ($opt_V) {
-    print_revision($PROGNAME,'2.1.1'); #'
+    print_revision("$PROGNAME", "$VERSION"); #'
     exit $ERRORS{'OK'};
 }
 
@@ -162,19 +118,16 @@ else {
     }
 }
 
-my $workgroup = undef;
-$workgroup = $1 if (defined($opt_W) && $opt_W =~ /(.*)/);
-
 my $address = undef;
 $address = $1 if (defined($opt_a) && $opt_a =~ /(.*)/);
 
 # end of options checking
 
 
-my $state = 'OK';
+my $state = "OK";
 my $answer = undef;
 my $res = undef;
-my $perfdata = '';
+my $perfdata = "";
 my @lines = undef;
 
 # Execute a "du" on the share using smbclient program
@@ -210,13 +163,13 @@ if ($DEBUG) {
 # Just in case of problems, let's not hang Nagios
 $SIG{'ALRM'} = sub { 
     print "No Answer from Client\n";
-    exit $ERRORS{'UNKNOWN'};
+    exit $ERRORS{"UNKNOWN"};
 };
 
-print join(' ', @cmd) . "\n" if ($verbose);
+print join(" ", @cmd) . "\n" if ($verbose);
 alarm($TIMEOUT);
 
-$res = output_and_error_of(@cmd) or exit $ERRORS{'UNKNOWN'};
+$res = output_and_error_of(@cmd) or exit $ERRORS{"UNKNOWN"};
 
 #Turn off alarm
 alarm(0);
@@ -229,8 +182,8 @@ print LOG "\n----------------------\n".$res."\n"  if ($DEBUG);
 $_ = $lines[$#lines-1];
 #print "$_\n";
 
-$answer = 'Result from ssh not suitable';
-$state = 'UNKNOWN';
+$answer = "Result from smbclient not suitable";
+$state = "UNKNOWN";
 
 foreach (@lines) {
     my @result = parse_line($_);
@@ -265,7 +218,7 @@ sub output_and_error_of (@) {
             return <CMD>;
         } else {
             open STDERR, ">&STDOUT" and exec @_;
-            exit $ERRORS{'WARNING'};
+            exit(1);
         }
     }
     return undef;
@@ -277,19 +230,19 @@ sub parse_line ($) {
     my $line = shift;
     
     if (/(Access denied|NT_STATUS_LOGON_FAILURE|NT_STATUS_ACCESS_DENIED)/) {
-        return (TRUE, '', 'CRITICAL', 'Access Denied');
+        return (TRUE, "", "CRITICAL", "Access Denied");
     }
     
     if (/(Unknown host \w*|Connection.*failed)/) {
-        return (TRUE, '', 'CRITICAL', "$1");
+        return (TRUE, "", "CRITICAL", "$1");
     }
     
     if (/(ERROR:.*)/) {
-        return (TRUE, '', 'CRITICAL', "$1");
+        return (TRUE, "", "CRITICAL", "$1");
     }
     
     if (/(You specified an invalid share name|NT_STATUS_BAD_NETWORK_NAME)/) {
-        return (TRUE, '', 'CRITICAL', "Invalid share name \\\\$host\\$share");
+        return (TRUE, "", "CRITICAL", "Invalid share name \\\\$host\\$share");
     }
     
     if (/\s*(\d*) blocks of size (\d*)\. (\d*) blocks available/) {
@@ -337,60 +290,45 @@ sub parse_line ($) {
             . $total_bytes;
 
         if ($occupied_bytes > $crit_bytes) {
-            return (TRUE, $perfdata, 'CRITICAL', "CRITICAL: Only $avail ($capper%) free on $mountpt");
+            return (TRUE, $perfdata, "CRITICAL", "CRITICAL: Only $avail ($capper%) free on $mountpt");
         }
         
         if ( $occupied_bytes > $warn_bytes ) {
             return (TRUE, $perfdata, "WARNING", "WARNING: Only $avail ($capper%) free on $mountpt");
         }
         
-        return (TRUE, $perfdata, 'OK', "Disk ok - $avail ($capper%) free on $mountpt");
+        return (TRUE, $perfdata, "OK", "Disk ok - $avail ($capper%) free on $mountpt");
         
     }
-    return (FALSE, 'OK', undef, undef, undef);
+    return (FALSE, "OK", undef, undef, undef);
 }
 
 sub print_usage () {
     print "Usage: $PROGNAME -H <host> -s <share> -u <user> -p <password> 
       -w <warn> -c <crit> [-W <workgroup>] [-P <port>] [-a <IP>]\n";
-    exit $ERRORS{'UNKNOWN'};
 }
 
 sub print_help () {
-    print_revision($PROGNAME,'2.1.1');
-    print "Copyright (c) 2000 Michael Anthon/Karl DeBisschop
+    printf $PROGNAME;
+    print "Copyright (c) 2020 Bob Ballantyne
 
-Perl Check SMB Disk plugin for Nagios
+Perl Check plugin for Nagios
 
 ";
     print_usage();
     print "
 -H, --hostname=HOST
-   NetBIOS name of the server
--s, --share=STRING
-   Share name to be tested
--W, --workgroup=STRING
-   Workgroup or Domain used (Defaults to \"WORKGROUP\")
--a, --address=IP
-   IP-address of HOST (only necessary if HOST is in another network)
+   name or IP of the server
 -u, --user=STRING
    Username to log in to server. (Defaults to \"guest\")
 -p, --password=STRING
    Password to log in to server. (Defaults to an empty password)
+
 -w, --warning=INTEGER or INTEGER[kMG]
-   Percent of used space at which a warning will be generated (Default: 85%)
-      
+   Percent of used space at which a warning will be generated (Default: 85%)     
 -c, --critical=INTEGER or INTEGER[kMG]
    Percent of used space at which a critical will be generated (Defaults: 95%)
--P, --port=INTEGER
-   Port to be used to connect to. Some Windows boxes use 139, others 445 (Defaults to smbclient default)
    
-   If thresholds are followed by either a k, M, or G then check to see if that
-   much disk space is available (kilobytes, Megabytes, Gigabytes)
-
-   Warning percentage should be less than critical
-   Warning (remaining) disk space should be greater than critical.
-
 ";
     support();
 }

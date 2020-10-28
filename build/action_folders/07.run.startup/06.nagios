@@ -23,16 +23,25 @@ sed -Ei \
      "$__file"
 
 
-# fix up ssh access (do not touch original files)
-if [ -d "${NAGIOS['home']}/.ssh" ]; then
-    chmod 700 "${NAGIOS['home']}/.ssh"
-    chmod 600 "${NAGIOS['home']}/.ssh"/*
-    [ -f "${NAGIOS['home']}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS['home']}/.ssh/id_rsa.pub"
-fi
-
 # make sure our config is what we expect
 nagios.startup "${NAGIOS_CONFIG_SOURCE:-}"
 
 
 # verify nagios configuration
 nagios  --verify-config "${NAGIOS['etc']}/nagios.cfg"
+
+# fix up ssh access (do not touch original files)
+if [ -d /var/ssh ] && [ $(ls -A /var/ssh/* | wc -l) -gt 0 ]; then
+    mkdir -p "${NAGIOS['home']}/.ssh"
+    cp /var/ssh/* "${NAGIOS['home']}/.ssh"/
+    chmod 700 "${NAGIOS['home']}/.ssh"
+    chmod 600 "${NAGIOS['home']}/.ssh"/*
+    sudo chown -R nagios:nagios "${NAGIOS['home']}/.ssh"
+    [ -f "${NAGIOS['home']}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS['home']}/.ssh/id_rsa.pub"
+
+elif [ -d "${NAGIOS['home']}/.ssh" ]; then
+    chmod 700 "${NAGIOS['home']}/.ssh"
+    chmod 600 "${NAGIOS['home']}/.ssh"/*
+    [ -f "${NAGIOS['home']}/.ssh/id_rsa.pub" ] && chmod 644 "${NAGIOS['home']}/.ssh/id_rsa.pub"
+fi
+ 

@@ -9,13 +9,11 @@ sed -i -E -e "s|^(define\('PNP_LOG_PATH')\s*,.*$|\1, '/var/log');|" "$cfgFile"
 #sed -i -e '12 i\require_once(__DIR__ . DIRECTORY_SEPARATOR . '"'PhpConsole' . DIRECTORY_SEPARATOR . 'Helper.php'"');\n' "$cfgFile"
 #sed -i -e '13 i\PhpConsole\\Handler::getInstance();\n' "$cfgFile"
 
-
-
 # mark config as OK
 touch "${PNP4NAGIOS['www']}/install.ignore"
 
 # setup config in /etc
-ln -s "${PNP4NAGIOS['etc']}" "${PNP4NAGIOS['home']}/etc"
+#ln -s "${PNP4NAGIOS['etc']}" "${PNP4NAGIOS['home']}/etc"
 
 # allow PHP processing to access pnp4nagios directories
 declare shFile="/usr/local/crf/startup/04.php.sh"
@@ -40,9 +38,8 @@ chmod 777 "$perfdataDir"
 # update all references to rrdtool to use PHP accessible copy
 cd /usr/local
 declare -a rrdtool
-mapfile -t rrdtool < <(grep -rc '/usr/bin/rrdtool' * | grep -v ':0')
+mapfile -t rrdtool < <(grep -rc '/usr/bin/rrdtool' * | grep -v ':0' ||:)
 if [ "${#rrdtool[*]}" -gt 0 ]; then
-
   for f in $(printf '%s\n' "${rrdtool[@]}"| cut -d ':' -f 1); do
     sed -i -e "s|$(which rrdtool)|${NAGIOS['home']}/bin/rrdtool|g" "$f"
   done
@@ -56,4 +53,8 @@ grep -rc '/usr/bin/rrdtool' * | grep -v ':0' ||:
 
 cfgFile="${NGINX['etc']}/conf.d/php_fpm.redirect"
 sed -i -e '1 i\location ~ ^(/pnp4nagios.*\\.php)(.*)$ {\n    root /var/www/pnp4nagios;\n    try_files $uri @pnp4nagios;\n}\n\n' "$cfgFile"
+
+for cfgFile in $(grep -rc '/var/tmp' "${PNP4NAGIOS['etc']}"/* | grep -v ':0' | cut -d ':' -f 1);do
+    sed -i -e 's|= "/var/tmp";|= "/tmp";|g' "$cfgFile"
+done
 

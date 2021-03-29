@@ -11,15 +11,15 @@ services:
                 FROM_BASE: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP7_VERSION:-7.2.22-r0}:${BASE_TAG:-latest}
 #                FROM_BASE: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP5_VERSION:-5.6.40-r0}:${BASE_TAG:-latest}
                 NAGIOS_VERSION: ${NAGIOS_VERSION:-4.4.5}
-                NCONF_VERSION: ${NCONF_VERSION:-1.3.0-0}
+                NCONF_VERSION: ${NCONF_VERSION:-1.4.0-final2}
                 NOBJECT_VERSION: ${NOBJECT_VERSION:-0.21.20}
 #                NPLUGINS_VERSION: ${NPLUGIN_VERSION:-2.2.3}
                 PNP4NAGIOS_VERSION: ${PNP4NAGIOS_VERSION:-0.6.26}
             cache_from:
-                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}thirdparty/${CONTAINER_OS:-alpine}:${OS_VERSION:-3.12.0}
+                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}thirdparty/${CONTAINER_OS:-alpine}:${OS_VERSION:-3.12.4}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/base_container:${BASE_TAG:-latest}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/supervisord:${BASE_TAG:-latest}
-                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nginx-base/${NGINX_VERSION:-1.16.1}:${BASE_TAG:-latest}
+                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nginx-base/${NGINX_VERSION:-1.18.0}:${BASE_TAG:-latest}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP7_VERSION:-7.2.22-r0}:${BASE_TAG:-latest}
             context: .
             dockerfile: Dockerfile

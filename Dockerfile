@@ -43,7 +43,7 @@ LABEL version.pnp4nagios=$PNP4NAGIOS_VERSION
 # build content
 RUN set -o verbose \
     && chmod u+rwx /tmp/build.sh \
-    && /tmp/build.sh "$CONTAINER_NAME" "$DEBUG_TRACE" \
+    && /tmp/build.sh "$CONTAINER_NAME" "$DEBUG_TRACE" "$TZ" \
     && ([ "$DEBUG_TRACE" != 0 ] || rm -rf /tmp/*) 
 
 

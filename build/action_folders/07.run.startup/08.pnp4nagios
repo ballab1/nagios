@@ -36,3 +36,9 @@ fi
 
 cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
 sed -i -e "s|PNP_LOG_PATH.'/kohana';|PNP_LOG_PATH;|" "$cfgFile"
+
+
+declare perfdataDir="$(readlink -f "$(dirname "$(nagios.CFG_PARAM 'host_perfdata_file')")")"
+term.log "setting permissions on $perfdataDir"'\n' 'white'
+sudo chown -R nagios:nagios "$perfdataDir"
+sudo chmod 777 "$perfdataDir"

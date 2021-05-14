@@ -26,6 +26,12 @@ sed -i -e 's%'"$org"'%'"$rep"'%' "$shFile"
 cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
 sed -i -E -e "s|(config\['log_threshold'\]).*|\1 = 2;|g" "$cfgFile"
 
+# guard agains deprecated functions:  https://github.com/easydigitaldownloads/easy-digital-downloads/issues/7818
+while read -r cfgFile; do
+    sed -i -e "s|get_magic_quotes_runtime()|version_compare( phpversion(), '5.4', '<' ) && function_exists( 'get_magic_quotes_runtime' ) && get_magic_quotes_runtime()|g" "$cfgFile"
+done < <(grep -r 'get_magic_quotes_runtime' ${PNP4NAGIOS['home']}/* | cut -d ':' -f 1)
+
+
 cfgFile="${PNP4NAGIOS['etc']}/process_perfdata.cfg"
 sed -i -E -e "s|^(LOG_FILE\s*=\s*).*$|\1/var/log/pnp4nagios.log|g" "$cfgFile"
 

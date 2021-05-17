@@ -1,4 +1,4 @@
-ARG FROM_BASE=${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP5_VERSION:-5.6.40-r0}:${BASE_TAG:-latest}
+ARG FROM_BASE=${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP7_VERSION:-7.4.19-r0}:${BASE_TAG:-latest}
 FROM $FROM_BASE
 
 # name and version of this docker image
@@ -29,7 +29,7 @@ ARG NOBJECT_VERSION=0.21.20
 LABEL version.nagios.object=$NOBJECT_VERSION  
 
 # nconf version being bundled in this docker image
-ARG NCONF_VERSION=1.3.0-0
+ARG NCONF_VERSION=1.4.0-final2
 LABEL version.nconf=$NCONF_VERSION  
 
 # nagiosgraph being bundled in this docker image

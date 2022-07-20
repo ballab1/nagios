@@ -5,6 +5,7 @@ declare -a BUILD=( alpine-sdk
                    gcc
                    jpeg-dev
                    libpng-dev
+                   musl-dev
                    openssl-dev
                    rrdtool-dev )
 declare -a PKGS=( gnutls-utils )

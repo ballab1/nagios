@@ -29,5 +29,5 @@ ln -s "${NAGIOS['home']}/bin" "${PNP4NAGIOS['home']}/bin"
 
 make fullinstall
 
-wget "https://github.com/lingej/pnp-metrics-api/raw/master/application/controller/api.php" \
+wget "https://github.com/lingej/pnp-metrics-api/blob/master/application/controller/api.php" \
      -O /var/www/pnp4nagios/application/controllers/api.php

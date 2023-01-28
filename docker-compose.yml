@@ -41,4 +41,4 @@ services:
             NCONF_DBNAME: nconf
 #            PWD_PROTECTED: 'true'
         hostname: nagios
-        image: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nagios/${NAGIOS_VERSION:-4.4.9}:${CONTAINER_TAG:-latest}
+        image: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nagios/${NAGIOS_VERSION:-4.4.10}:${CONTAINER_TAG:-latest}

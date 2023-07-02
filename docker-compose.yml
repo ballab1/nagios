@@ -17,7 +17,7 @@ services:
 #                NPLUGINS_VERSION: ${NPLUGIN_VERSION:-2.2.3}
                 PNP4NAGIOS_VERSION: ${PNP4NAGIOS_VERSION:-0.6.26}
             cache_from:
-                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}thirdparty/${CONTAINER_OS:-alpine}:${OS_VERSION:-3.15.8}
+                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}thirdparty/${CONTAINER_OS:-alpine}:${OS_VERSION:-3.18.2}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/base_container:${BASE_TAG:-latest}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/supervisord:${BASE_TAG:-latest}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nginx-base/${NGINX_VERSION:-1.20.1}:${BASE_TAG:-latest}

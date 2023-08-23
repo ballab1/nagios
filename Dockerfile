@@ -1,4 +1,4 @@
-ARG FROM_BASE=${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP7_VERSION:-7.4.30-r0}:${BASE_TAG:-latest}
+ARG FROM_BASE=${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP8_VERSION:-8.2.7-r0}:${BASE_TAG:-latest}
 FROM $FROM_BASE
 
 # name and version of this docker image

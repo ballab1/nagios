@@ -9,8 +9,7 @@ services:
             args:
                 CBF_VERSION: ${CBF_VERSION:-}
                 CONTAINER_NAME: nagios
-                FROM_BASE: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP7_VERSION:-7.4.30-r0}:${BASE_TAG:-latest}
-#                FROM_BASE: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP5_VERSION:-5.6.40-r0}:${BASE_TAG:-latest}
+                FROM_BASE: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP8_VERSION:-8.2.7-r0}:${BASE_TAG:-latest}
                 NAGIOS_VERSION: ${NAGIOS_VERSION:-4.4.6}
                 NCONF_VERSION: ${NCONF_VERSION:-1.4.0-final2}
                 NOBJECT_VERSION: ${NOBJECT_VERSION:-0.21.20}
@@ -21,7 +20,7 @@ services:
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/base_container:${BASE_TAG:-latest}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/supervisord:${BASE_TAG:-latest}
                 - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nginx-base/${NGINX_VERSION:-1.20.1}:${BASE_TAG:-latest}
-                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP7_VERSION:-7.4.30-r0}:${BASE_TAG:-latest}
+                - ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/php/${PHP8_VERSION:-8.2.7-r0}:${BASE_TAG:-latest}
             context: .
             dockerfile: Dockerfile
             labels:

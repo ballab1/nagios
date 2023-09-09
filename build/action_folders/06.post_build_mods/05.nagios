@@ -28,3 +28,10 @@ sed -i -e '3 i\nohup /usr/local/bin/finishNagiosStartupScript &\n' "$startFile"
 
 declare -r fcgiwrap='/etc/nginx/conf.d/fcgiwrap.redirect'
 sed -i -E -e 's|^\s+rewrite .*$|    rewrite ^.*/cgi-bin/(.*)$ /\$1;|' "$fcgiwrap" 
+
+if [ "$(which php82)" ]; then
+    declare cnfFile="/var/www/nconf/include/includeAllClasses.php"
+    term.log "    updating '$cnfFile'\n" 'white'
+    sed -i -e "s|__autoload|spl_autoload_register|"  \
+              "$cnfFile"
+fi

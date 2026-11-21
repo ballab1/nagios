@@ -5,8 +5,8 @@ declare bg_log='/var/log/nagios_bg.log'
 {
   source /usr/local/crf/bin/init.runtime
 
-  term.log "$(date -Iseconds)"' Starting nagios.finishStartupScript\n' 'yellow' | tee /dev/fd/3
-  nagios.finishStartup
+  term::log "$(date -Iseconds)"' Starting nagios::finishStartupScript\n' 'yellow' | tee /dev/fd/3
+  nagios::finishStartup
 
 }  2>&1  > "$bg_log"
 

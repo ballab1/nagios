@@ -5,9 +5,9 @@
 
 
 if [ "${PWD_PROTECTED:-}" ] && [ "${NAGIOS_USER:-}" ]; then
-    [ "${NAGIOS_PASS:-}" ] || lib.file_env 'NAGIOS_PASS'
+    [ "${NAGIOS_PASS:-}" ] || lib::file_env 'NAGIOS_PASS'
     : ${NAGIOS_PASS:?"Environment variable 'NAGIOS_PASS' not defined in '${BASH_SOURCE[0]}'"}
-    nginx.setHtPasswd "$NAGIOS_USER" "$NAGIOS_PASS"
+    nginx::setHtPasswd "$NAGIOS_USER" "$NAGIOS_PASS"
 
     # update cgi config for admin user
     sed -i "s|=nagiosadmin|=${NAGIOS_USER}|" "${NAGIOS['etc']}/cgi.cfg"
@@ -16,7 +16,7 @@ fi
 
 # update fcgi config for nagios
 declare __file=/etc/nginx/conf.d/fcgiwrap.redirect
-term.log "    updating '${__file}' to use NAGIOS CGI scripts"'\n' 'white' 
+term::log "    updating '${__file}' to use NAGIOS CGI scripts"'\n' 'white'
 sed -Ei \
      -e 's|^\s*root.*$|    root /usr/local/nagios/sbin;|' \
      -e 's|^\s*fastcgi_param\s+SCRIPT_FILENAME\s+.*$|    fastcgi_param SCRIPT_FILENAME /usr/local/nagios/sbin/$fastcgi_script_name;|' \
@@ -24,7 +24,7 @@ sed -Ei \
 
 
 # make sure our config is what we expect
-nagios.startup "${NAGIOS_CONFIG_SOURCE:-}"
+nagios::startup "${NAGIOS_CONFIG_SOURCE:-}"
 
 
 # verify nagios configuration
@@ -48,7 +48,6 @@ fi
 if [ "${NAGIOS_LOG_SYSLOG:-0}" != 0 ]; then
     # add errors to syslog
     __file=/etc/nagios/nagios.cfg
-    term.log "    updating '${__file}' to log to syslog"'\n' 'white'
+    term::log "    updating '${__file}' to log to syslog"'\n' 'white'
     sed -Ei -e 's|^use_syslog\s+.*$|use_syslog=1;|' "$__file"
 fi
-  

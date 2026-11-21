@@ -4,14 +4,14 @@ declare cfgFile
 
 if [ "${PNP4NAGIOS_LOGLEVEL:-}" ]; then
     if [[ "${PNP4NAGIOS_LOGLEVEL}" -le 0 || "${PNP4NAGIOS_LOGLEVEL}" -gt 4 ]]; then
-        term.elog "    Invalid PNP4NAGIOS_LOGLEVEL provided: $PNP4NAGIOS_LOGLEVEL\n" 'white' 
+        term::elog "    Invalid PNP4NAGIOS_LOGLEVEL provided: $PNP4NAGIOS_LOGLEVEL\n" 'white'
         exit 0
     fi
 
     # pnp4nagios log thresholds:
     #  0 - Disable logging, 1 - Errors and exceptions, 2 - Warnings, 3 - Notices,  4 - Debugging
     cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
-    term.log "    updating '${cfgFile}' with provided 'log_threshold'"'\n' 'white' 
+    term::log "    updating '${cfgFile}' with provided 'log_threshold'"'\n' 'white'
     sed -i -E -e "s|(config\['log_threshold'\]).*|\1 = $PNP4NAGIOS_LOGLEVEL;|g" "$cfgFile"
 
 
@@ -22,7 +22,7 @@ if [ "${PNP4NAGIOS_LOGLEVEL:-}" ]; then
       4)   LOG_LEVEL=2;;
     esac
     declare cfgFile="${PNP4NAGIOS['etc']}/process_perfdata.cfg"
-    term.log "    updating '${cfgFile}' with provided 'LOG_LEVEL'"'\n' 'white' 
+    term::log "    updating '${cfgFile}' with provided 'LOG_LEVEL'"'\n' 'white'
     sed -i -E -e "s|^(LOG_LEVEL\s*=\s*).*$|\1$LOG_LEVEL|g" "$cfgFile"
 fi
 
@@ -32,13 +32,13 @@ if [ "${PNP4NAGIOS_LOGFILE:-}" ]; then
     sed -i -E -e "s|^(LOG_FILE\s*=\s*).*$|\1 $PNP4NAGIOS_LOGFILE|g" "$cfgFile"
 fi
 
-[ "$(which mail)" ] || (cd /bin ; ln -s true mail) 
+[ "$(which mail)" ] || (cd /bin ; ln -s true mail)
 
 cfgFile="${PNP4NAGIOS['www']}/application/config/config.php"
 sed -i -e "s|PNP_LOG_PATH.'/kohana';|PNP_LOG_PATH;|" "$cfgFile"
 
 
 declare perfdataDir="$(readlink -f "$(dirname "$(nagios.CFG_PARAM 'host_perfdata_file')")")"
-term.log "setting permissions on $perfdataDir"'\n' 'white'
+term::log "setting permissions on $perfdataDir"'\n' 'white'
 sudo chown -R nagios:nagios "$perfdataDir"
 sudo chmod 777 "$perfdataDir"

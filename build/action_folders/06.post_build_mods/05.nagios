@@ -1,10 +1,10 @@
 #!/bin/bash
- 
+
 # enable root access in our container for webuser
 echo "nagios ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 echo "www-data ALL=(ALL) NOPASSWD: /usr/local/nagios/bin/deploy_local.sh" >> /etc/sudoers
 
-# nagios process needs set-uid so it can elevate its privileges        
+# nagios process needs set-uid so it can elevate its privileges
 chmod 6755 /bin/busybox
 
 usermod -aG www-data nagios
@@ -18,20 +18,20 @@ mv /usr/lib/nagios/plugins/* "${NAGIOS['home']}/libexec/"
 rmdir /usr/lib/nagios/plugins
 
 
-[ ! -f "$(crf.STARTUP)/03.require_pwd" ]    || rm "$(crf.STARTUP)/03.require_pwd"
-[ ! -f "$(crf.STARTUP)/99.supervisord.sh" ] || rm "$(crf.STARTUP)/99.supervisord.sh"
-[ ! -f "$(crf.STARTUP)/99.workdir.sh" ]     || rm "$(crf.STARTUP)/99.workdir.sh"
+[ ! -f "$(crf::STARTUP)/03.require_pwd" ]    || rm "$(crf::STARTUP)/03.require_pwd"
+[ ! -f "$(crf::STARTUP)/99.supervisord.sh" ] || rm "$(crf::STARTUP)/99.supervisord.sh"
+[ ! -f "$(crf::STARTUP)/99.workdir.sh" ]     || rm "$(crf::STARTUP)/99.workdir.sh"
 
 declare -r startFile='/usr/local/bin/run.sh'
-sed -i -e '3 i\nohup /usr/local/bin/finishNagiosStartupScript &\n' "$startFile" 
-#sed -i -e '3 i\setsid -f /usr/local/bin/finishNagiosStartupScript &\n' "$startFile" 
+sed -i -e '3 i\nohup /usr/local/bin/finishNagiosStartupScript &\n' "$startFile"
+#sed -i -e '3 i\setsid -f /usr/local/bin/finishNagiosStartupScript &\n' "$startFile"
 
 declare -r fcgiwrap='/etc/nginx/conf.d/fcgiwrap.redirect'
-sed -i -E -e 's|^\s+rewrite .*$|    rewrite ^.*/cgi-bin/(.*)$ /\$1;|' "$fcgiwrap" 
+sed -i -E -e 's|^\s+rewrite .*$|    rewrite ^.*/cgi-bin/(.*)$ /\$1;|' "$fcgiwrap"
 
 if [ "$(which php82)" ]; then
     declare cnfFile="/var/www/nconf/include/includeAllClasses.php"
-    term.log "    updating '$cnfFile'\n" 'white'
+    term::log "    updating '$cnfFile'\n" 'white'
     sed -i -e "s|__autoload|spl_autoload_register|"  \
               "$cnfFile"
 fi

@@ -2,11 +2,11 @@
 
 
 mkdir -p "${NCONF['www']}"
-tar xf "${NCONF['file']}" 
+tar xf "${NCONF['file']}"
 mv "${NCONF['dir']}"/* "${NCONF['www']}"/
 
 
-[ -e "${NCONF['www']}/INSTALL/create_database.sql" ] && mv "${NCONF['www']}/INSTALL/create_database.sql" "$(crf.BIN)/"
+[ -e "${NCONF['www']}/INSTALL/create_database.sql" ] && mv "${NCONF['www']}/INSTALL/create_database.sql" "$(crf::BIN)/"
 
 #[ -e "${NCONF['www']}/ADD-ONS" ] && rm -rf "${NCONF['www']}/ADD-ONS"
 [ -e "${NCONF['www']}/config.orig" ] && rm -rf "${NCONF['www']}/config.orig"

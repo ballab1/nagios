@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(crf.ENV)/03.NCONF"
+source "$(crf::ENV)/03.NCONF"
 
 if [ "${NCONF_DBPASS_FILE:-}" ]; then
     cat << EOT > "${NCONF['home']}/config/mysql.password.inc.php"
@@ -18,5 +18,5 @@ sed -i -E -e "s|^(define\('DEBUG_MODE',).*$|\1 ${NCONF_DEBUG_MODE:-0});|" \
           -e "s|^(define\('DEBUG_GENERATE',).*$|\1 ${NCONF_DEBUG_GENERATE:-1});|" \
           "$cfgFile"
 
-crf.fixupDirectory "${NCONF['www']}" "$WWW_UID"
+crf::fixupDirectory "${NCONF['www']}" "$WWW_UID"
 chmod a+x "${NCONF['home']}/bin"/*

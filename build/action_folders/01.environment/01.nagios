@@ -21,7 +21,7 @@ declare -ar env_nagios=(
 )
 
 #remove WORKDIR & WWW so THEY come after NAGIOS_HOME
-crf.removeFromRuntimeEnvironment 'WORKDIR'   
-crf.removeFromRuntimeEnvironment 'WWW'   
-crf.removeFromRuntimeEnvironment 'USER'   
-crf.updateRuntimeEnvironment "${env_nagios[@]}" 
+crf::removeFromRuntimeEnvironment 'WORKDIR'
+crf::removeFromRuntimeEnvironment 'WWW'
+crf::removeFromRuntimeEnvironment 'USER'
+crf::updateRuntimeEnvironment "${env_nagios[@]}"

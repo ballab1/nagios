@@ -4,7 +4,7 @@
 # NCONF database settings:
 USER="nconf"
 DBNAME="NConf"
-[ ${NCONF_DBPASS:-} ] || lib.file_env 'NCONF_DBPASS'
+[ ${NCONF_DBPASS:-} ] || lib::file_env 'NCONF_DBPASS'
 DBPASS=${NCONF_DBPASS}
 
 # delete history entries older than
